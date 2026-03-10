@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Unboxing — SafeTrade</title>
+  <link rel="stylesheet" href="/css/main.css">
+  <style>
+    .step-indicator {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.875rem 1rem;
+      border-radius: var(--radius);
+      font-size: 0.9rem;
+      margin-bottom: 0.75rem;
+      border: 1.5px solid var(--border);
+      cursor: pointer;
+      transition: all var(--transition);
+      background: var(--card);
+    }
+    .step-indicator.done { border-color: var(--success); background: var(--success-light); }
+    .step-indicator.required { border-color: var(--danger); }
+    .step-check { width: 28px; height: 28px; border-radius: 50%; border: 2px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 0.8rem; flex-shrink: 0; transition: all var(--transition); }
+    .step-indicator.done .step-check { background: var(--success); border-color: var(--success); color: white; }
+    .step-indicator.required .step-check { border-color: var(--danger); color: var(--danger); }
+
+    .video-preview-wrap { position: relative; background: #000; border-radius: var(--radius); overflow: hidden; aspect-ratio: 16/9; }
+    .video-preview-wrap video { width: 100%; height: 100%; }
+    .video-preview-remove { position: absolute; top: 0.5rem; right: 0.5rem; background: rgba(0,0,0,0.7); color: white; border: none; border-radius: 50%; width: 30px; height: 30px; cursor: pointer; font-size: 1rem; }
+  </style>
+</head>
+<body>
+
+<nav class="navbar">
+  <a href="/" class="nav-logo">SafeTrade</a>
+  <div class="nav-actions">
+    <div id="nav-auth" style="display:flex;gap:0.5rem">
+      <a href="/login.html" class="btn btn-ghost btn-sm">Connexion</a>
+    </div>
+    <div id="nav-user" style="display:none" class="nav-user">
+      <span class="nav-balance" id="nav-balance">—</span>
+      <div class="dropdown">
+        <button class="nav-username-btn" id="nav-username-btn"><span id="nav-username">Profil</span> ▾</button>
+        <div class="dropdown-menu" id="user-dropdown" style="display:none">
+          <a href="/dashboard.html" class="dropdown-item">🏠 Dashboard</a>
+          <div class="dropdown-divider"></div>
+          <button class="dropdown-item danger" onclick="logout()">🚪 Déconnexion</button>
+        </div>
+      </div>
+    </div>
+    <div id="nav-admin" style="display:none"><a href="/admin/" class="btn btn-warning btn-sm">Admin</a></div>
+  </div>
+</nav>
+
+<div class="container-md" style="padding-top:2rem;padding-bottom:3rem">
+  <a href="/dashboard.html" style="color:var(--text-muted);font-size:0.9rem">← Mon tableau de bord</a>
+
+  <div id="unboxing-container" style="margin-top:1.5rem">
+    <div class="loading-overlay"><div class="spinner"></div></div>
+  </div>
+</div>
+
+<script src="/js/api.js"></script>
+<script src="/js/auth.js"></script>
+<script>
+  const orderId = new URLSearchParams(location.search).get('orderId');
+  let codeData = null;
+  let selectedVideo = null;
+  const selectedPhotos = [];
+
+  document.addEventListener('DOMContentLoaded', async () => {
+    const user = getCurrentUser();
+    if (!user || !API.token) { window.location.href = '/login.html'; return; }
+    renderNav(user);
+    await loadCode();
+  });
+
+  async function loadCode() {
+    try {
+      const data = await API.get(`/api/unboxing/${orderId}/code`);
+      codeData = data;
+      renderUnboxingPage(data);
+      startCountdown(data.deadline);
+    } catch (e) {
+      document.getElementById('unboxing-container').innerHTML = `
+        <div class="empty-state">
+          <div class="empty-state-icon">❌</div>
+          <h3>Unboxing non disponible</h3>
+          <p>${e.message}</p>
+          <a href="/order.html?id=${orderId}" class="btn btn-primary" style="margin-top:1rem">Retour à la commande</a>
+        </div>`;
+    }
+  }
+
+  function renderUnboxingPage(data) {
+    document.title = `Unboxing #${orderId} — SafeTrade`;
+    document.getElementById('unboxing-container').innerHTML = `
+      <div style="display:grid;grid-template-columns:1fr 360px;gap:2rem;align-items:start">
+        <!-- LEFT: Form -->
+        <div>
+          <h1 style="font-size:1.5rem;margin-bottom:0.5rem">🎬 Unboxing de votre commande</h1>
+          <p style="margin-bottom:2rem">Filmez l'ouverture de votre colis en montrant clairement le code de vérification</p>
+
+          <!-- Code Display -->
+          <div class="code-display" style="margin-bottom:2rem">
+            <div class="code-label">Votre code de vérification unique</div>
+            <div class="code-value" id="code-display">${data.verification_code}</div>
+            <div class="code-countdown" id="countdown-display">Chargement...</div>
+            <div class="code-warning">
+              ⚠️ Ce code doit être visible dans votre vidéo ou vos photos. Sans code visible, votre unboxing peut être rejeté.
+            </div>
+          </div>
+
+          <!-- Instructions -->
+          <div class="card" style="margin-bottom:1.5rem">
+            <div class="card-header"><h3>📋 Instructions étape par étape</h3></div>
+            <div class="card-body">
+              <ol style="padding-left:1.25rem;display:flex;flex-direction:column;gap:0.75rem;font-size:0.9rem">
+                <li><strong>Préparez votre code</strong> — Notez ou affichez le code <strong style="font-family:monospace;color:var(--primary)">${data.verification_code}</strong> sur un papier</li>
+                <li><strong>Démarrez l'enregistrement</strong> — Montrez le colis fermé avec le code visible à la caméra</li>
+                <li><strong>Ouvrez le colis</strong> — Filmez l'intégralité de l'ouverture sans coupure</li>
+                <li><strong>Montrez le contenu</strong> — Vérifiez que l'article correspond à l'annonce</li>
+                <li><strong>Soumettez</strong> — Uploadez la vidéo ou des photos ci-dessous</li>
+              </ol>
+            </div>
+          </div>
+
+          <!-- Upload form -->
+          <form id="unboxing-form">
+
+            <!-- Step 1: Video -->
+            <div class="card" style="margin-bottom:1rem">
+              <div class="card-header">
+                <h3>Étape 1 — Vidéo (recommandé)</h3>
+                <span class="badge badge-secondary">Optionnel si photos</span>
+              </div>
+              <div class="card-body">
+                <div id="video-zone" class="upload-zone" onclick="document.getElementById('video-input').click()">
+                  <input type="file" id="video-input" accept="video/*" style="display:none" onchange="handleVideo(event)">
+                  <div class="upload-zone-icon">🎥</div>
+                  <div class="upload-zone-text">
+                    <strong>Cliquez pour ajouter votre vidéo</strong><br>
+                    MP4, MOV, AVI — max 500 Mo
+                  </div>
+                </div>
+                <div id="video-preview" style="display:none;margin-top:1rem"></div>
+              </div>
+            </div>
+
+            <!-- Step 2: Photos -->
+            <div class="card" style="margin-bottom:1rem">
+              <div class="card-header">
+                <h3>Étape 2 — Photos (max 10)</h3>
+                <span class="badge badge-secondary">Optionnel si vidéo</span>
+              </div>
+              <div class="card-body">
+                <div id="photos-zone" class="upload-zone" onclick="document.getElementById('photos-input').click()">
+                  <input type="file" id="photos-input" accept="image/*" multiple style="display:none" onchange="handlePhotos(event)">
+                  <div class="upload-zone-icon">📸</div>
+                  <div class="upload-zone-text">
+                    <strong>Cliquez pour ajouter des photos</strong><br>
+                    Incluez au moins une photo montrant le code
+                  </div>
+                </div>
+                <div class="upload-previews" id="photos-previews"></div>
+              </div>
+            </div>
+
+            <!-- Step 3: Checklist -->
+            <div class="card" style="margin-bottom:1.5rem">
+              <div class="card-header"><h3>Étape 3 — Confirmations</h3></div>
+              <div class="card-body">
+                <div id="check-code" class="step-indicator required" onclick="toggleCheck('code')">
+                  <div class="step-check" id="check-code-dot">?</div>
+                  <div>
+                    <div style="font-weight:600">Le code est visible dans mes médias</div>
+                    <div style="font-size:0.8rem;color:var(--text-muted)">Le code <strong>${data.verification_code}</strong> est clairement lisible</div>
+                  </div>
+                </div>
+
+                <div style="margin-top:1rem">
+                  <label class="form-label">L'article correspond-il à l'annonce ?</label>
+                  <div style="display:flex;gap:0.75rem">
+                    <button type="button" id="cond-yes" class="btn btn-ghost" onclick="setCondition(true)">✅ Oui, conforme</button>
+                    <button type="button" id="cond-no" class="btn btn-ghost" onclick="setCondition(false)">❌ Non conforme</button>
+                  </div>
+                </div>
+
+                <div class="form-group" style="margin-top:1rem">
+                  <label class="form-label">Notes ou remarques (optionnel)</label>
+                  <textarea id="buyer-notes" class="form-control" rows="3" placeholder="Décrivez ce que vous avez constaté à l'ouverture..."></textarea>
+                </div>
+              </div>
+            </div>
+
+            <!-- Submit -->
+            <button type="submit" id="submit-unboxing" class="btn btn-primary btn-full btn-lg" disabled>
+              📤 Soumettre mon unboxing
+            </button>
+            <p id="submit-hint" style="text-align:center;font-size:0.85rem;color:var(--danger);margin-top:0.5rem">
+              Ajoutez au moins 1 fichier et confirmez que le code est visible
+            </p>
+          </form>
+        </div>
+
+        <!-- RIGHT: Order summary -->
+        <div>
+          <div class="card" style="position:sticky;top:80px">
+            <div class="card-header"><h3>Commande #${orderId}</h3></div>
+            <div class="card-body">
+              ${data.order_summary.thumbnail ? `<img src="${data.order_summary.thumbnail}" style="width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:var(--radius-sm);margin-bottom:1rem">` : ''}
+              <div style="font-weight:600;margin-bottom:0.5rem">${escHtml(data.order_summary.title || '')}</div>
+              <div style="font-size:1.25rem;font-weight:800;color:var(--primary);margin-bottom:1rem">${formatPrice(data.order_summary.amount)}</div>
+
+              <div class="divider"></div>
+
+              <div style="font-size:0.85rem">
+                <div style="font-weight:700;margin-bottom:0.5rem;color:var(--text)">Délai restant</div>
+                <div id="sidebar-countdown" style="font-size:1.1rem;font-weight:700;color:var(--warning);margin-bottom:1rem">Chargement...</div>
+                <p style="color:var(--text-muted)">Si vous ne soumettez pas dans les délais, les fonds seront automatiquement libérés au vendeur.</p>
+              </div>
+
+              <div class="divider"></div>
+
+              <div style="font-size:0.85rem;color:var(--text-muted)">
+                <div style="font-weight:700;color:var(--text);margin-bottom:0.5rem">🛡️ Votre protection</div>
+                <ul style="padding-left:1.25rem;display:flex;flex-direction:column;gap:0.4rem">
+                  <li>Litige disponible après soumission</li>
+                  <li>Remboursement si article non conforme</li>
+                  <li>Vidéo = preuve irréfutable</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+
+    setupForm();
+  }
+
+  function setupForm() {
+    // Drag & drop for photos
+    const photosZone = document.getElementById('photos-zone');
+    photosZone.addEventListener('dragover', e => { e.preventDefault(); photosZone.classList.add('dragging'); });
+    photosZone.addEventListener('dragleave', () => photosZone.classList.remove('dragging'));
+    photosZone.addEventListener('drop', e => {
+      e.preventDefault();
+      photosZone.classList.remove('dragging');
+      handleFilesArray(Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/')));
+    });
+
+    document.getElementById('unboxing-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const codeConfirmed = document.getElementById('check-code').classList.contains('done');
+      if (!codeConfirmed) { showToast('Confirmez que le code est visible', 'error'); return; }
+      if (!selectedVideo && selectedPhotos.length === 0) { showToast('Ajoutez au moins une vidéo ou photo', 'error'); return; }
+
+      const btn = document.getElementById('submit-unboxing');
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner" style="width:18px;height:18px;border-width:2px;display:inline-block;vertical-align:middle"></span> Envoi en cours...';
+
+      try {
+        const formData = new FormData();
+        formData.append('code_visible_confirmed', 'true');
+        const condYes = document.getElementById('cond-yes').classList.contains('btn-success');
+        const condNo = document.getElementById('cond-no').classList.contains('btn-danger');
+        if (condYes) formData.append('condition_matches', 'true');
+        else if (condNo) formData.append('condition_matches', 'false');
+        formData.append('buyer_notes', document.getElementById('buyer-notes').value);
+        if (selectedVideo) formData.append('video', selectedVideo);
+        selectedPhotos.forEach(f => formData.append('photos', f));
+
+        await API.postForm(`/api/unboxing/${orderId}/submit`, formData);
+        showToast('Unboxing soumis avec succès !');
+        setTimeout(() => window.location.href = `/order.html?id=${orderId}`, 1000);
+      } catch (e) {
+        showToast(e.message, 'error');
+        btn.disabled = false;
+        btn.textContent = 'Soumettre mon unboxing';
+        checkSubmitReady();
+      }
+    });
+  }
+
+  function handleVideo(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    selectedVideo = file;
+    const url = URL.createObjectURL(file);
+    document.getElementById('video-zone').style.display = 'none';
+    document.getElementById('video-preview').style.display = 'block';
+    document.getElementById('video-preview').innerHTML = `
+      <div class="video-preview-wrap">
+        <video src="${url}" controls></video>
+        <button class="video-preview-remove" onclick="removeVideo()">✕</button>
+      </div>
+      <p style="text-align:center;font-size:0.8rem;color:var(--text-muted);margin-top:0.5rem">${file.name} (${(file.size/1024/1024).toFixed(1)} Mo)</p>
+    `;
+    checkSubmitReady();
+  }
+
+  function removeVideo() {
+    selectedVideo = null;
+    document.getElementById('video-input').value = '';
+    document.getElementById('video-preview').style.display = 'none';
+    document.getElementById('video-zone').style.display = 'block';
+    checkSubmitReady();
+  }
+
+  function handlePhotos(event) {
+    handleFilesArray(Array.from(event.target.files));
+  }
+
+  function handleFilesArray(files) {
+    files.forEach(file => {
+      if (selectedPhotos.length >= 10) { showToast('Maximum 10 photos', 'warning'); return; }
+      selectedPhotos.push(file);
+      const reader = new FileReader();
+      reader.onload = e => addPhotoPreview(e.target.result, selectedPhotos.length - 1);
+      reader.readAsDataURL(file);
+    });
+    checkSubmitReady();
+  }
+
+  function addPhotoPreview(src, idx) {
+    const el = document.createElement('div');
+    el.className = 'upload-preview';
+    el.id = `photo-prev-${idx}`;
+    el.innerHTML = `<img src="${src}" alt=""><button class="upload-preview-remove" onclick="removePhoto(${idx})">✕</button>`;
+    document.getElementById('photos-previews').appendChild(el);
+  }
+
+  function removePhoto(idx) {
+    selectedPhotos.splice(idx, 1);
+    document.getElementById('photos-previews').innerHTML = '';
+    selectedPhotos.forEach((f, i) => {
+      const reader = new FileReader();
+      reader.onload = e => addPhotoPreview(e.target.result, i);
+      reader.readAsDataURL(f);
+    });
+    checkSubmitReady();
+  }
+
+  let codeChecked = false;
+  let conditionSet = null;
+
+  function toggleCheck(type) {
+    if (type === 'code') {
+      codeChecked = !codeChecked;
+      const el = document.getElementById('check-code');
+      el.classList.toggle('done', codeChecked);
+      el.classList.toggle('required', !codeChecked);
+      document.getElementById('check-code-dot').textContent = codeChecked ? '✓' : '?';
+      checkSubmitReady();
+    }
+  }
+
+  function setCondition(val) {
+    conditionSet = val;
+    const yesBtn = document.getElementById('cond-yes');
+    const noBtn = document.getElementById('cond-no');
+    yesBtn.className = val ? 'btn btn-success' : 'btn btn-ghost';
+    noBtn.className = !val ? 'btn btn-danger' : 'btn btn-ghost';
+  }
+
+  function checkSubmitReady() {
+    const hasMedia = selectedVideo || selectedPhotos.length > 0;
+    const ready = hasMedia && codeChecked;
+    const btn = document.getElementById('submit-unboxing');
+    const hint = document.getElementById('submit-hint');
+    if (btn) {
+      btn.disabled = !ready;
+      if (hint) {
+        if (!hasMedia) hint.textContent = 'Ajoutez au moins une vidéo ou une photo';
+        else if (!codeChecked) hint.textContent = 'Confirmez que le code est visible dans vos médias';
+        else hint.style.display = 'none';
+      }
+    }
+  }
+
+  function startCountdown(deadline) {
+    function update() {
+      const diff = new Date(deadline) - new Date();
+      const h = Math.floor(diff / 3600000);
+      const m = Math.floor((diff % 3600000) / 60000);
+      const s = Math.floor((diff % 60000) / 1000);
+      const str = diff <= 0 ? 'Délai expiré !' : `${h}h ${m}m ${s}s`;
+      const urgent = h < 6 && diff > 0;
+
+      ['countdown-display', 'sidebar-countdown'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+          el.textContent = str;
+          el.className = urgent ? 'code-countdown urgent' : 'code-countdown';
+          el.style.color = diff <= 0 ? 'var(--danger)' : urgent ? '#f87171' : 'var(--warning)';
+        }
+      });
+    }
+    update();
+    setInterval(update, 1000);
+  }
+
+  function escHtml(s) { return s ? s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') : ''; }
+</script>
+</body>
+</html>

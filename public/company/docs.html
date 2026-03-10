@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SafeTrade Business API — Documentation</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f8fafc; color: #334155; }
+
+    /* NAV */
+    nav {
+      background: #1a1a2e;
+      padding: 0 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 60px;
+      position: sticky; top: 0; z-index: 100;
+    }
+    .nav-logo { font-size: 1.2rem; font-weight: 800; color: white; text-decoration: none; }
+    .nav-badge { display: inline-block; background: rgba(79,70,229,0.3); color: #a5b4fc; font-size: 0.65rem; font-weight: 600; padding: 0.15rem 0.5rem; border-radius: 999px; margin-left: 0.5rem; }
+    .nav-links { display: flex; gap: 1.5rem; }
+    .nav-links a { color: rgba(255,255,255,0.65); text-decoration: none; font-size: 0.875rem; }
+    .nav-links a:hover { color: white; }
+    .nav-cta { padding: 0.5rem 1rem; background: #4f46e5; color: white; border-radius: 8px; font-size: 0.875rem; font-weight: 600; text-decoration: none; }
+    .nav-cta:hover { background: #4338ca; }
+
+    /* HERO */
+    .hero {
+      background: linear-gradient(135deg, #1a1a2e 0%, #0f3460 100%);
+      color: white;
+      text-align: center;
+      padding: 5rem 2rem;
+    }
+    .hero h1 { font-size: 3rem; font-weight: 800; margin-bottom: 1rem; }
+    .hero h1 span { color: #818cf8; }
+    .hero p { font-size: 1.15rem; color: rgba(255,255,255,0.7); max-width: 600px; margin: 0 auto 2.5rem; }
+    .hero-actions { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+    .btn-hero-primary { padding: 0.875rem 2rem; background: #4f46e5; color: white; border-radius: 10px; font-size: 1rem; font-weight: 600; text-decoration: none; }
+    .btn-hero-primary:hover { background: #4338ca; }
+    .btn-hero-secondary { padding: 0.875rem 2rem; background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.2); border-radius: 10px; font-size: 1rem; font-weight: 600; text-decoration: none; }
+    .btn-hero-secondary:hover { background: rgba(255,255,255,0.18); }
+
+    /* QUICK START */
+    .section { max-width: 960px; margin: 0 auto; padding: 4rem 2rem; }
+    .section-title { font-size: 1.75rem; font-weight: 800; color: #0f172a; margin-bottom: 0.5rem; }
+    .section-sub { color: #64748b; margin-bottom: 2.5rem; }
+    .steps-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1.5rem; }
+    .step-card {
+      background: white;
+      border-radius: 14px;
+      padding: 1.5rem;
+      border: 1px solid #e2e8f0;
+      position: relative;
+    }
+    .step-num {
+      width: 36px; height: 36px;
+      background: #ede9fe;
+      color: #4f46e5;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 800; font-size: 1rem;
+      margin-bottom: 1rem;
+    }
+    .step-card h3 { font-size: 1rem; font-weight: 700; color: #0f172a; margin-bottom: 0.4rem; }
+    .step-card p { font-size: 0.875rem; color: #64748b; line-height: 1.5; }
+
+    /* ENDPOINTS */
+    .endpoints-section { background: white; border-radius: 18px; border: 1px solid #e2e8f0; overflow: hidden; margin-bottom: 1.5rem; }
+    .endpoint-row {
+      border-bottom: 1px solid #f1f5f9;
+    }
+    .endpoint-row:last-child { border-bottom: none; }
+    .endpoint-header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 1rem 1.5rem;
+      cursor: pointer;
+      transition: background 0.1s;
+    }
+    .endpoint-header:hover { background: #fafbff; }
+    .method-badge { padding: 0.25rem 0.6rem; border-radius: 6px; font-size: 0.72rem; font-weight: 700; font-family: monospace; min-width: 52px; text-align: center; }
+    .method-get { background: #dbeafe; color: #1e40af; }
+    .method-post { background: #dcfce7; color: #166534; }
+    .method-patch { background: #fef3c7; color: #92400e; }
+    .endpoint-path { font-family: monospace; font-size: 0.9rem; color: #0f172a; font-weight: 600; }
+    .endpoint-short-desc { margin-left: auto; font-size: 0.82rem; color: #64748b; }
+    .endpoint-body { padding: 0 1.5rem 1.5rem; display: none; }
+    .endpoint-body.open { display: block; }
+    .endpoint-body p { font-size: 0.875rem; color: #475569; margin: 0.75rem 0 0.5rem; }
+    pre {
+      background: #0f172a;
+      color: #e2e8f0;
+      padding: 1.25rem;
+      border-radius: 10px;
+      font-size: 0.8rem;
+      overflow-x: auto;
+      margin-top: 0.75rem;
+      line-height: 1.7;
+    }
+    pre .comment { color: #64748b; }
+    pre .key { color: #a5b4fc; }
+    pre .str { color: #86efac; }
+    pre .num { color: #fbbf24; }
+
+    /* PRICING */
+    .pricing-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 1.5rem; }
+    .pricing-card {
+      background: white;
+      border-radius: 16px;
+      padding: 2rem;
+      border: 2px solid #e2e8f0;
+      text-align: center;
+      position: relative;
+    }
+    .pricing-card.featured { border-color: #4f46e5; }
+    .pricing-featured-badge {
+      position: absolute;
+      top: -12px; left: 50%; transform: translateX(-50%);
+      background: #4f46e5; color: white; font-size: 0.72rem; font-weight: 700;
+      padding: 0.25rem 0.75rem; border-radius: 999px; white-space: nowrap;
+    }
+    .pricing-plan { font-size: 0.85rem; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.75rem; }
+    .pricing-price { font-size: 2.5rem; font-weight: 800; color: #0f172a; line-height: 1; }
+    .pricing-price span { font-size: 1rem; font-weight: 500; color: #94a3b8; }
+    .pricing-limit { font-size: 0.875rem; color: #64748b; margin: 0.5rem 0 1.5rem; }
+    .pricing-features { list-style: none; text-align: left; margin-bottom: 1.5rem; }
+    .pricing-features li { font-size: 0.875rem; color: #475569; padding: 0.35rem 0; display: flex; align-items: center; gap: 0.5rem; }
+    .pricing-features li::before { content: '✓'; color: #22c55e; font-weight: 700; }
+    .btn-pricing { display: block; padding: 0.75rem; background: #4f46e5; color: white; border-radius: 9px; font-weight: 600; text-decoration: none; font-size: 0.9rem; transition: background 0.15s; }
+    .btn-pricing:hover { background: #4338ca; }
+    .btn-pricing-ghost { background: white; color: #4f46e5; border: 1.5px solid #4f46e5; }
+    .btn-pricing-ghost:hover { background: #ede9fe; }
+
+    /* FOOTER */
+    footer { background: #1a1a2e; color: rgba(255,255,255,0.5); text-align: center; padding: 2rem; font-size: 0.875rem; }
+    footer a { color: #a5b4fc; text-decoration: none; }
+
+    .divider-line { border: none; border-top: 1px solid #e2e8f0; margin: 0; }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div style="display:flex;align-items:center">
+    <a href="/" class="nav-logo">SafeTrade</a>
+    <span class="nav-badge">Business API</span>
+  </div>
+  <div class="nav-links">
+    <a href="#quickstart">Démarrage</a>
+    <a href="#endpoints">Endpoints</a>
+    <a href="#pricing">Tarifs</a>
+  </div>
+  <a href="/company/login.html" class="nav-cta">Se connecter</a>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <h1>Intégrez la sécurité<br>unboxing <span>en 5 minutes</span></h1>
+  <p>Protégez vos clients contre la fraude et la contrefaçon avec notre API de vérification par unboxing vidéo.</p>
+  <div class="hero-actions">
+    <a href="/company/register.html" class="btn-hero-primary">Créer un compte gratuit</a>
+    <a href="#endpoints" class="btn-hero-secondary">Voir la documentation</a>
+  </div>
+</div>
+
+<!-- QUICK START -->
+<div class="section" id="quickstart">
+  <h2 class="section-title">Démarrage rapide</h2>
+  <p class="section-sub">Intégrez SafeTrade en 3 étapes simples</p>
+  <div class="steps-grid">
+    <div class="step-card">
+      <div class="step-num">1</div>
+      <h3>Créez un compte entreprise</h3>
+      <p>Inscrivez-vous gratuitement et obtenez votre clé API en moins d'une minute. Aucune carte bancaire requise.</p>
+    </div>
+    <div class="step-card">
+      <div class="step-num">2</div>
+      <h3>Obtenez votre API key</h3>
+      <p>Votre clé API est générée automatiquement à l'inscription. Elle ressemble à <code style="font-size:0.8rem;background:#f1f5f9;padding:0.1rem 0.3rem;border-radius:4px">sk_live_...</code></p>
+    </div>
+    <div class="step-card">
+      <div class="step-num">3</div>
+      <h3>Intégrez en 5 lignes de code</h3>
+      <p>Appelez <code style="font-size:0.8rem;background:#f1f5f9;padding:0.1rem 0.3rem;border-radius:4px">POST /api/b2b/orders</code> lors de chaque commande. Envoyez l'URL d'unboxing à votre client.</p>
+    </div>
+  </div>
+
+  <div style="margin-top:2.5rem">
+    <pre><code><span class="comment">// Exemple d'intégration Node.js — 1 seule requête API suffit</span>
+app.post('/checkout/complete', async (req, res) => {
+  const order = await createOrder(req.body);
+
+  <span class="comment">// Appel SafeTrade</span>
+  const safeRes = await fetch('https://safetrade.com/api/b2b/orders', {
+    method: 'POST',
+    headers: {
+      'Authorization': 'Bearer sk_live_votre_cle_api',
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      external_order_id: order.id,
+      customer_email: order.customer.email,
+      customer_name: order.customer.name,
+      product_name: order.product.name,
+      order_amount: order.total,
+      currency: 'EUR'
+    })
+  });
+
+  const { verification_code, unboxing_url } = await safeRes.json();
+
+  <span class="comment">// Envoyez l'URL par email à votre client</span>
+  await sendEmail({
+    to: order.customer.email,
+    subject: 'Votre commande — Commencez votre unboxing',
+    html: `&lt;a href="${unboxing_url}"&gt;Démarrer l'unboxing&lt;/a&gt;`
+  });
+
+  res.json({ order, unboxing_url });
+});</code></pre>
+  </div>
+</div>
+
+<!-- ENDPOINTS -->
+<div class="section" id="endpoints">
+  <h2 class="section-title">Référence API</h2>
+  <p class="section-sub">Base URL: <code style="background:#f1f5f9;padding:0.2rem 0.5rem;border-radius:6px">https://votre-domaine.com</code> — Authentification: <code style="background:#f1f5f9;padding:0.2rem 0.5rem;border-radius:6px">Authorization: Bearer sk_live_...</code></p>
+
+  <div class="endpoints-section">
+    <!-- POST /orders -->
+    <div class="endpoint-row">
+      <div class="endpoint-header" onclick="toggleEndpoint(this)">
+        <span class="method-badge method-post">POST</span>
+        <span class="endpoint-path">/api/b2b/orders</span>
+        <span class="endpoint-short-desc">Créer une commande</span>
+        <span style="color:#94a3b8;margin-left:0.5rem">▾</span>
+      </div>
+      <div class="endpoint-body">
+        <p>Crée une commande et génère un code de vérification unique. Retourne l'URL d'unboxing à envoyer au client.</p>
+        <pre><code><span class="comment"># Requête</span>
+curl -X POST https://votre-domaine.com/api/b2b/orders \
+  -H "Authorization: Bearer sk_live_..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "external_order_id": "ORDER-2024-001",     <span class="comment">// requis — votre ID de commande</span>
+    "customer_email": "client@example.com",     <span class="comment">// requis</span>
+    "customer_name": "Jean Dupont",             <span class="comment">// optionnel</span>
+    "product_name": "Air Max 90 Blanc T42",     <span class="comment">// requis</span>
+    "product_description": "Taille 42, blanc",  <span class="comment">// optionnel</span>
+    "order_amount": 129.99,                     <span class="comment">// requis</span>
+    "currency": "EUR",                          <span class="comment">// optionnel, défaut: EUR</span>
+    "tracking_number": "FR700000001",           <span class="comment">// optionnel</span>
+    "carrier": "Colissimo",                     <span class="comment">// optionnel</span>
+    "webhook_url": "https://votre-site.com/webhook" <span class="comment">// optionnel</span>
+  }'
+
+<span class="comment"># Réponse 201 Created</span>
+{
+  "order_id": 42,
+  "external_order_id": "ORDER-2024-001",
+  "verification_code": "A3F9",
+  "unboxing_url": "https://safetrade.com/unboxing-customer.html?code=A3F9&order=42",
+  "qr_code_url": "https://safetrade.com/api/b2b/orders/42/qr",
+  "message": "Commande créée. Partagez le verification_code ou unboxing_url avec votre client."
+}</code></pre>
+      </div>
+    </div>
+
+    <!-- GET /orders -->
+    <div class="endpoint-row">
+      <div class="endpoint-header" onclick="toggleEndpoint(this)">
+        <span class="method-badge method-get">GET</span>
+        <span class="endpoint-path">/api/b2b/orders</span>
+        <span class="endpoint-short-desc">Lister les commandes</span>
+        <span style="color:#94a3b8;margin-left:0.5rem">▾</span>
+      </div>
+      <div class="endpoint-body">
+        <p>Récupère la liste paginée de vos commandes. Filtrage par statut disponible.</p>
+        <pre><code>curl "https://votre-domaine.com/api/b2b/orders?status=unboxing_submitted&page=1&limit=20" \
+  -H "Authorization: Bearer sk_live_..."
+
+<span class="comment"># Statuts possibles: pending, shipped, unboxing_pending,</span>
+<span class="comment">#                    unboxing_submitted, completed, disputed, refunded</span></code></pre>
+      </div>
+    </div>
+
+    <!-- GET /orders/:id -->
+    <div class="endpoint-row">
+      <div class="endpoint-header" onclick="toggleEndpoint(this)">
+        <span class="method-badge method-get">GET</span>
+        <span class="endpoint-path">/api/b2b/orders/:id</span>
+        <span class="endpoint-short-desc">Détail d'une commande</span>
+        <span style="color:#94a3b8;margin-left:0.5rem">▾</span>
+      </div>
+      <div class="endpoint-body">
+        <p>Récupère une commande avec son unboxing associé si disponible.</p>
+        <pre><code>curl "https://votre-domaine.com/api/b2b/orders/42" \
+  -H "Authorization: Bearer sk_live_..."
+
+<span class="comment"># Réponse inclut l'objet "unboxing" si soumis:</span>
+{
+  "id": 42,
+  "status": "unboxing_submitted",
+  ...
+  "unboxing": {
+    "ai_confidence": 0.91,
+    "code_visible": 1,
+    "condition_ok": 1,
+    "photo_urls": ["/uploads/..."],
+    "customer_notes": "Tout est parfait"
+  }
+}</code></pre>
+      </div>
+    </div>
+
+    <!-- PATCH /ship -->
+    <div class="endpoint-row">
+      <div class="endpoint-header" onclick="toggleEndpoint(this)">
+        <span class="method-badge method-patch">PATCH</span>
+        <span class="endpoint-path">/api/b2b/orders/:id/ship</span>
+        <span class="endpoint-short-desc">Marquer comme expédiée</span>
+        <span style="color:#94a3b8;margin-left:0.5rem">▾</span>
+      </div>
+      <div class="endpoint-body">
+        <p>Passe la commande en statut "shipped". Appelable uniquement depuis le statut "pending".</p>
+        <pre><code>curl -X PATCH https://votre-domaine.com/api/b2b/orders/42/ship \
+  -H "Authorization: Bearer sk_live_..." \
+  -H "Content-Type: application/json" \
+  -d '{"tracking_number": "FR700000001", "carrier": "Colissimo"}'</code></pre>
+      </div>
+    </div>
+
+    <!-- PATCH /deliver -->
+    <div class="endpoint-row">
+      <div class="endpoint-header" onclick="toggleEndpoint(this)">
+        <span class="method-badge method-patch">PATCH</span>
+        <span class="endpoint-path">/api/b2b/orders/:id/deliver</span>
+        <span class="endpoint-short-desc">Confirmer la livraison</span>
+        <span style="color:#94a3b8;margin-left:0.5rem">▾</span>
+      </div>
+      <div class="endpoint-body">
+        <p>Confirme la livraison et ouvre une fenêtre de 48h pour que le client soumette son unboxing. Idéalement appelé sur webhook de votre transporteur.</p>
+        <pre><code>curl -X PATCH https://votre-domaine.com/api/b2b/orders/42/deliver \
+  -H "Authorization: Bearer sk_live_..."
+
+<span class="comment"># Réponse</span>
+{
+  "message": "Livraison confirmée. Fenêtre unboxing de 48h ouverte.",
+  "unboxing_deadline": "2024-12-20T14:30:00.000Z"
+}</code></pre>
+      </div>
+    </div>
+
+    <!-- PATCH /resolve -->
+    <div class="endpoint-row">
+      <div class="endpoint-header" onclick="toggleEndpoint(this)">
+        <span class="method-badge method-patch">PATCH</span>
+        <span class="endpoint-path">/api/b2b/orders/:id/resolve</span>
+        <span class="endpoint-short-desc">Résoudre la commande</span>
+        <span style="color:#94a3b8;margin-left:0.5rem">▾</span>
+      </div>
+      <div class="endpoint-body">
+        <p>Finalise une commande après examen de l'unboxing. "completed" = tout est OK. "refunded" = problème détecté.</p>
+        <pre><code>curl -X PATCH https://votre-domaine.com/api/b2b/orders/42/resolve \
+  -H "Authorization: Bearer sk_live_..." \
+  -H "Content-Type: application/json" \
+  -d '{"resolution": "completed"}'   <span class="comment">// ou "refunded"</span></code></pre>
+      </div>
+    </div>
+
+    <!-- GET /stats -->
+    <div class="endpoint-row">
+      <div class="endpoint-header" onclick="toggleEndpoint(this)">
+        <span class="method-badge method-get">GET</span>
+        <span class="endpoint-path">/api/b2b/stats</span>
+        <span class="endpoint-short-desc">Statistiques entreprise</span>
+        <span style="color:#94a3b8;margin-left:0.5rem">▾</span>
+      </div>
+      <div class="endpoint-body">
+        <p>Récupère vos statistiques globales: commandes totales, fraudes prévenues, répartition par statut.</p>
+        <pre><code>curl "https://votre-domaine.com/api/b2b/stats" \
+  -H "Authorization: Bearer sk_live_..."
+
+<span class="comment"># Réponse</span>
+{
+  "company": { "name": "Nike", "plan": "enterprise", "monthly_orders_used": 247 },
+  "total_orders": 1842,
+  "fraud_prevented": 23,
+  "status_breakdown": [
+    { "status": "completed", "count": 1756 },
+    { "status": "unboxing_submitted", "count": 43 },
+    ...
+  ]
+}</code></pre>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PRICING -->
+<div style="background:white;border-top:1px solid #e2e8f0;border-bottom:1px solid #e2e8f0">
+  <div class="section" id="pricing">
+    <h2 class="section-title" style="text-align:center">Tarifs simples et transparents</h2>
+    <p class="section-sub" style="text-align:center">Démarrez gratuitement, évoluez selon vos besoins</p>
+    <div class="pricing-grid">
+      <div class="pricing-card">
+        <div class="pricing-plan">Starter</div>
+        <div class="pricing-price">0€<span>/mois</span></div>
+        <div class="pricing-limit">100 commandes/mois</div>
+        <ul class="pricing-features">
+          <li>API complète</li>
+          <li>Dashboard temps réel</li>
+          <li>Analyse IA basique</li>
+          <li>Support email</li>
+        </ul>
+        <a href="/company/register.html" class="btn-pricing btn-pricing-ghost">Démarrer gratuitement</a>
+      </div>
+      <div class="pricing-card featured">
+        <div class="pricing-featured-badge">Le plus populaire</div>
+        <div class="pricing-plan">Pro</div>
+        <div class="pricing-price">99€<span>/mois</span></div>
+        <div class="pricing-limit">1 000 commandes/mois</div>
+        <ul class="pricing-features">
+          <li>Tout du Starter</li>
+          <li>Analyse IA avancée</li>
+          <li>Webhooks temps réel</li>
+          <li>Support prioritaire</li>
+          <li>Rapports mensuels</li>
+        </ul>
+        <a href="/company/register.html" class="btn-pricing">Commencer l'essai</a>
+      </div>
+      <div class="pricing-card">
+        <div class="pricing-plan">Enterprise</div>
+        <div class="pricing-price" style="font-size:1.75rem">Sur devis</div>
+        <div class="pricing-limit">Commandes illimitées</div>
+        <ul class="pricing-features">
+          <li>Tout du Pro</li>
+          <li>SLA garanti 99.9%</li>
+          <li>Intégration sur mesure</li>
+          <li>Account manager dédié</li>
+          <li>Conformité RGPD avancée</li>
+        </ul>
+        <a href="mailto:enterprise@safetrade.com" class="btn-pricing btn-pricing-ghost">Nous contacter</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <p>© 2024 SafeTrade — <a href="/">Marketplace</a> · <a href="/company/login.html">Connexion</a> · <a href="/company/register.html">Inscription</a></p>
+</footer>
+
+<script>
+  function toggleEndpoint(header) {
+    const body = header.nextElementSibling;
+    const arrow = header.querySelector('span:last-child');
+    body.classList.toggle('open');
+    arrow.textContent = body.classList.contains('open') ? '▴' : '▾';
+  }
+</script>
+</body>
+</html>

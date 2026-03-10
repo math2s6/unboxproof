@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Messages — SafeTrade</title>
+  <link rel="stylesheet" href="/css/main.css">
+</head>
+<body style="overflow:hidden">
+
+<nav class="navbar">
+  <a href="/" class="nav-logo">SafeTrade</a>
+  <div class="nav-actions">
+    <div id="nav-auth" style="display:flex;gap:0.5rem">
+      <a href="/login.html" class="btn btn-ghost btn-sm">Connexion</a>
+    </div>
+    <div id="nav-user" style="display:none" class="nav-user">
+      <span class="nav-balance" id="nav-balance">—</span>
+      <div class="dropdown">
+        <button class="nav-username-btn" id="nav-username-btn"><span id="nav-username">Profil</span> ▾</button>
+        <div class="dropdown-menu" id="user-dropdown" style="display:none">
+          <a href="/dashboard.html" class="dropdown-item">🏠 Dashboard</a>
+          <div class="dropdown-divider"></div>
+          <button class="dropdown-item danger" onclick="logout()">🚪 Déconnexion</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<div class="chat-layout">
+  <!-- Sidebar -->
+  <div class="chat-sidebar">
+    <div style="padding:1rem;border-bottom:1px solid var(--border);font-weight:700">Conversations</div>
+    <div id="convos-list">
+      <div class="loading-overlay" style="min-height:150px"><div class="spinner"></div></div>
+    </div>
+  </div>
+
+  <!-- Main -->
+  <div class="chat-main" id="chat-main-empty">
+    <div style="flex:1;display:flex;align-items:center;justify-content:center">
+      <div class="empty-state">
+        <div class="empty-state-icon">💬</div>
+        <h3>Sélectionnez une conversation</h3>
+        <p>Choisissez un contact dans la liste à gauche</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="/js/api.js"></script>
+<script src="/js/auth.js"></script>
+<script>
+  let currentUser = null;
+  let activeConvo = null;
+  let pollInterval = null;
+
+  document.addEventListener('DOMContentLoaded', async () => {
+    currentUser = getCurrentUser();
+    if (!currentUser || !API.token) { window.location.href = '/login.html'; return; }
+    renderNav(currentUser);
+    await loadConversations();
+
+    // Check for pre-selected user from URL
+    const toUser = new URLSearchParams(location.search).get('with');
+    if (toUser) openConversation(toUser, '');
+  });
+
+  async function loadConversations() {
+    try {
+      const convos = await API.get('/api/messages/conversations');
+      const list = document.getElementById('convos-list');
+      if (!convos.length) {
+        list.innerHTML = '<div style="padding:1.5rem;text-align:center;color:var(--text-muted);font-size:0.85rem">Aucune conversation</div>';
+        return;
+      }
+      list.innerHTML = convos.map(c => `
+        <div class="convo-item ${activeConvo == c.other_id ? 'active' : ''}" onclick="openConversation(${c.other_id}, '${escHtml(c.other_name)}')">
+          <div style="display:flex;align-items:center;gap:0.75rem">
+            <div class="profile-avatar" style="width:40px;height:40px;font-size:1rem;flex-shrink:0">
+              ${c.other_avatar ? `<img src="${c.other_avatar}" alt="">` : c.other_name.charAt(0).toUpperCase()}
+            </div>
+            <div style="flex:1;min-width:0">
+              <div style="display:flex;align-items:center;justify-content:space-between">
+                <strong style="font-size:0.9rem">${escHtml(c.other_name)}</strong>
+                ${c.unread > 0 ? `<span class="badge badge-danger">${c.unread}</span>` : ''}
+              </div>
+              <div style="font-size:0.8rem;color:var(--text-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escHtml(c.last_message || '')}</div>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    } catch (e) {}
+  }
+
+  async function openConversation(userId, username) {
+    activeConvo = userId;
+
+    // Clear interval
+    if (pollInterval) clearInterval(pollInterval);
+
+    // Update sidebar active state
+    document.querySelectorAll('.convo-item').forEach(el => el.classList.remove('active'));
+
+    // Build chat UI
+    const main = document.querySelector('.chat-main') || document.getElementById('chat-main-empty');
+    const chatLayoutRight = document.querySelector('.chat-layout > .chat-main') || document.createElement('div');
+
+    // Replace the right panel
+    const layout = document.querySelector('.chat-layout');
+    const oldMain = layout.querySelector('div:last-child');
+    const newMain = document.createElement('div');
+    newMain.className = 'chat-main';
+    newMain.id = 'active-chat';
+    newMain.innerHTML = `
+      <div style="padding:1rem 1.5rem;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:0.75rem;background:var(--card)">
+        <div class="profile-avatar" style="width:38px;height:38px;font-size:1rem">${username ? username.charAt(0).toUpperCase() : '?'}</div>
+        <div style="font-weight:700" id="chat-username">${escHtml(username) || 'Chargement...'}</div>
+      </div>
+      <div class="chat-messages" id="chat-messages">
+        <div class="loading-overlay"><div class="spinner"></div></div>
+      </div>
+      <div class="chat-input-bar">
+        <input type="text" id="chat-input" class="form-control" placeholder="Votre message..." onkeydown="if(event.key==='Enter')sendMsg()">
+        <button class="btn btn-primary" onclick="sendMsg()">Envoyer</button>
+      </div>
+    `;
+    layout.replaceChild(newMain, oldMain);
+
+    await loadMessages(userId);
+
+    // Poll for new messages
+    pollInterval = setInterval(() => loadMessages(userId), 3000);
+    loadConversations();
+  }
+
+  async function loadMessages(userId) {
+    try {
+      const msgs = await API.get(`/api/messages/with/${userId}`);
+      const container = document.getElementById('chat-messages');
+      if (!container) return;
+
+      if (!msgs.length) {
+        container.innerHTML = '<div style="text-align:center;color:var(--text-muted);font-size:0.9rem;padding:2rem">Démarrez la conversation !</div>';
+        return;
+      }
+
+      const wasAtBottom = container.scrollHeight - container.scrollTop <= container.clientHeight + 50;
+
+      container.innerHTML = msgs.map(m => {
+        const isMine = m.sender_id === currentUser.id;
+        return `
+          <div class="msg ${isMine ? 'mine' : ''}">
+            <div class="msg-bubble">${escHtml(m.body)}</div>
+            <div class="msg-time">${formatDateTime(m.created_at)}</div>
+          </div>`;
+      }).join('');
+
+      if (wasAtBottom || true) {
+        container.scrollTop = container.scrollHeight;
+      }
+    } catch (e) {}
+  }
+
+  async function sendMsg() {
+    if (!activeConvo) return;
+    const input = document.getElementById('chat-input');
+    const body = input.value.trim();
+    if (!body) return;
+    try {
+      await API.post('/api/messages', { recipientId: parseInt(activeConvo), body });
+      input.value = '';
+      await loadMessages(activeConvo);
+    } catch (e) { showToast(e.message, 'error'); }
+  }
+
+  function escHtml(s) { return s ? String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') : ''; }
+</script>
+</body>
+</html>

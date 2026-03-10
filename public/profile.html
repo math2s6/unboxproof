@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Profil — SafeTrade</title>
+  <link rel="stylesheet" href="/css/main.css">
+</head>
+<body>
+
+<nav class="navbar">
+  <a href="/" class="nav-logo">SafeTrade</a>
+  <div class="nav-search">
+    <span class="nav-search-icon">🔍</span>
+    <input type="text" placeholder="Rechercher..." onkeydown="if(event.key==='Enter')window.location.href='/?q='+this.value">
+  </div>
+  <div class="nav-actions">
+    <div id="nav-auth" style="display:flex;gap:0.5rem">
+      <a href="/login.html" class="btn btn-ghost btn-sm">Connexion</a>
+      <a href="/register.html" class="btn btn-primary btn-sm">S'inscrire</a>
+    </div>
+    <div id="nav-user" style="display:none" class="nav-user">
+      <span class="nav-balance" id="nav-balance">—</span>
+      <div class="dropdown" style="position:relative">
+        <button class="nav-notif-btn" id="notif-btn">🔔<span class="notif-badge" id="notif-badge" style="display:none">0</span></button>
+        <div class="notif-panel" id="notif-panel" style="display:none"></div>
+      </div>
+      <div class="dropdown">
+        <button class="nav-username-btn" id="nav-username-btn"><span id="nav-username">Profil</span> ▾</button>
+        <div class="dropdown-menu" id="user-dropdown" style="display:none">
+          <a href="/dashboard.html" class="dropdown-item">🏠 Dashboard</a>
+          <a href="/messages.html" class="dropdown-item">💬 Messages</a>
+          <div class="dropdown-divider"></div>
+          <button class="dropdown-item danger" onclick="logout()">🚪 Déconnexion</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<div class="container" style="padding-top:2rem;padding-bottom:3rem">
+  <div id="profile-container">
+    <div class="loading-overlay"><div class="spinner"></div></div>
+  </div>
+</div>
+
+<script src="/js/api.js"></script>
+<script src="/js/auth.js"></script>
+<script>
+  const profileUserId = new URLSearchParams(location.search).get('id');
+
+  document.addEventListener('DOMContentLoaded', async () => {
+    const user = getCurrentUser();
+    renderNav(user);
+    if (user && API.token) loadNotifBadge();
+    if (!profileUserId) {
+      document.getElementById('profile-container').innerHTML = '<div class="empty-state"><p>ID utilisateur manquant</p></div>';
+      return;
+    }
+    await loadProfile();
+  });
+
+  async function loadProfile() {
+    try {
+      const [listings, ratings] = await Promise.all([
+        API.get(`/api/listings/by-seller/${profileUserId}`),
+        API.get(`/api/ratings/user/${profileUserId}`)
+      ]);
+
+      // Compute rating from ratings
+      const avgRating = ratings.length ? ratings.reduce((s, r) => s + r.score, 0) / ratings.length : 0;
+      const activeListings = listings.filter(l => l.status === 'active');
+
+      // Try to get a username from listings
+      const username = listings[0] ? '—' : 'Utilisateur';
+
+      document.getElementById('profile-container').innerHTML = `
+        <div class="detail-layout">
+          <div>
+            <!-- Profile header -->
+            <div class="card" style="margin-bottom:1.5rem">
+              <div class="card-body" style="display:flex;gap:1.5rem;align-items:flex-start;flex-wrap:wrap">
+                <div class="profile-avatar" style="width:80px;height:80px;font-size:2rem;flex-shrink:0">
+                  ${username.charAt(0).toUpperCase()}
+                </div>
+                <div style="flex:1">
+                  <h1 style="font-size:1.5rem;margin-bottom:0.25rem" id="profile-username">Profil #${profileUserId}</h1>
+                  <div style="margin-bottom:0.5rem">${starsHtml(avgRating)} <span style="color:var(--text-muted);font-size:0.9rem">${ratings.length} avis</span></div>
+                  <div style="font-size:0.85rem;color:var(--text-muted)">${activeListings.length} annonce${activeListings.length !== 1 ? 's' : ''} active${activeListings.length !== 1 ? 's' : ''}</div>
+                </div>
+                ${getCurrentUser() && getCurrentUser().id != profileUserId ? `
+                <a href="/messages.html?with=${profileUserId}" class="btn btn-secondary btn-sm">💬 Contacter</a>` : ''}
+              </div>
+            </div>
+
+            <!-- Listings -->
+            <div class="section-header">
+              <h2 class="section-title">Annonces actives (${activeListings.length})</h2>
+            </div>
+            ${activeListings.length === 0 ? `
+              <div class="empty-state">
+                <div class="empty-state-icon">📦</div>
+                <h3>Aucune annonce active</h3>
+              </div>
+            ` : `
+              <div class="listings-grid">
+                ${activeListings.map(l => `
+                  <div class="listing-card" onclick="window.location.href='/listing.html?id=${l.id}'">
+                    <div class="listing-card-img">
+                      <img src="${l.thumbnail || '/api/placeholder/0'}" alt="${escHtml(l.title)}" loading="lazy">
+                    </div>
+                    <div class="listing-card-body">
+                      <div class="listing-card-title">${escHtml(l.title)}</div>
+                      <div class="listing-card-price">${formatPrice(l.price)}</div>
+                      <div class="listing-card-meta">
+                        ${getConditionBadge(l.condition)}
+                      </div>
+                    </div>
+                  </div>
+                `).join('')}
+              </div>
+            `}
+          </div>
+
+          <!-- Reviews sidebar -->
+          <div>
+            <div class="card">
+              <div class="card-header">
+                <h3>Avis reçus</h3>
+                <span style="font-size:0.85rem;color:var(--text-muted)">${ratings.length}</span>
+              </div>
+              <div class="card-body">
+                ${ratings.length === 0 ? '<p style="color:var(--text-muted);font-size:0.9rem">Aucun avis</p>' :
+                  `<div style="text-align:center;margin-bottom:1.5rem">
+                    <div style="font-size:3rem;font-weight:800">${avgRating.toFixed(1)}</div>
+                    <div style="font-size:1.5rem">${starsHtml(Math.round(avgRating))}</div>
+                    <div style="font-size:0.85rem;color:var(--text-muted)">${ratings.length} avis</div>
+                  </div>
+                  ${ratings.map(r => `
+                    <div style="padding:0.875rem 0;border-bottom:1px solid var(--border)">
+                      <div style="display:flex;justify-content:space-between;margin-bottom:0.3rem">
+                        <strong style="font-size:0.85rem">${escHtml(r.rater_name)}</strong>
+                        <div>${starsHtml(r.score)}</div>
+                      </div>
+                      ${r.comment ? `<p style="font-size:0.85rem;margin:0">${escHtml(r.comment)}</p>` : ''}
+                      <div style="font-size:0.72rem;color:var(--text-muted);margin-top:0.25rem">${formatDate(r.created_at)}</div>
+                    </div>
+                  `).join('')}`
+                }
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    } catch (e) {
+      document.getElementById('profile-container').innerHTML = `<div class="empty-state"><p style="color:var(--danger)">${e.message}</p></div>`;
+    }
+  }
+
+  function escHtml(s) { return s ? s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') : ''; }
+</script>
+</body>
+</html>

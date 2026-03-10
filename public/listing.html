@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Annonce — SafeTrade</title>
+  <link rel="stylesheet" href="/css/main.css">
+</head>
+<body>
+
+<nav class="navbar">
+  <a href="/" class="nav-logo">SafeTrade</a>
+  <div class="nav-search">
+    <span class="nav-search-icon">🔍</span>
+    <input type="text" placeholder="Rechercher..." onkeydown="if(event.key==='Enter')window.location.href='/?q='+this.value">
+  </div>
+  <div class="nav-actions">
+    <div id="nav-auth" style="display:flex;gap:0.5rem">
+      <a href="/login.html" class="btn btn-ghost btn-sm">Connexion</a>
+      <a href="/register.html" class="btn btn-primary btn-sm">S'inscrire</a>
+    </div>
+    <div id="nav-user" style="display:none" class="nav-user">
+      <span class="nav-balance" id="nav-balance">—</span>
+      <div class="dropdown" style="position:relative">
+        <button class="nav-notif-btn" id="notif-btn">🔔<span class="notif-badge" id="notif-badge" style="display:none">0</span></button>
+        <div class="notif-panel" id="notif-panel" style="display:none"></div>
+      </div>
+      <div class="dropdown">
+        <button class="nav-username-btn" id="nav-username-btn"><span id="nav-username">Profil</span> ▾</button>
+        <div class="dropdown-menu" id="user-dropdown" style="display:none">
+          <a href="/dashboard.html" class="dropdown-item">🏠 Dashboard</a>
+          <a href="/create-listing.html" class="dropdown-item">➕ Vendre</a>
+          <a href="/messages.html" class="dropdown-item">💬 Messages</a>
+          <div class="dropdown-divider"></div>
+          <button class="dropdown-item danger" onclick="logout()">🚪 Déconnexion</button>
+        </div>
+      </div>
+    </div>
+    <div id="nav-admin" style="display:none"><a href="/admin/" class="btn btn-warning btn-sm">Admin</a></div>
+  </div>
+</nav>
+
+<div class="container" style="padding-top:2rem;padding-bottom:3rem">
+  <a href="/" style="color:var(--text-muted);font-size:0.9rem;display:inline-flex;align-items:center;gap:0.3rem;margin-bottom:1.5rem">← Retour aux annonces</a>
+
+  <div id="listing-container">
+    <div class="loading-overlay"><div class="spinner"></div></div>
+  </div>
+</div>
+
+<!-- PURCHASE MODAL -->
+<div id="buy-modal" class="modal-overlay" style="display:none">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Confirmer l'achat</h3>
+      <button class="modal-close" onclick="closeBuyModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div id="buy-modal-content"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeBuyModal()">Annuler</button>
+      <button class="btn btn-primary" id="confirm-buy-btn" onclick="confirmPurchase()">Confirmer l'achat</button>
+    </div>
+  </div>
+</div>
+
+<!-- MESSAGE MODAL -->
+<div id="msg-modal" class="modal-overlay" style="display:none">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Contacter le vendeur</h3>
+      <button class="modal-close" onclick="document.getElementById('msg-modal').style.display='none'">✕</button>
+    </div>
+    <div class="modal-body">
+      <div id="msg-modal-info" style="margin-bottom:1rem;padding:0.75rem;background:var(--bg-secondary);border-radius:var(--radius-sm);font-size:0.9rem"></div>
+      <div class="form-group">
+        <label class="form-label">Votre message</label>
+        <textarea class="form-control" id="msg-body" rows="4" placeholder="Bonjour, je suis intéressé par votre annonce..."></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="document.getElementById('msg-modal').style.display='none'">Annuler</button>
+      <button class="btn btn-primary" onclick="sendMessage()">Envoyer</button>
+    </div>
+  </div>
+</div>
+
+<script src="/js/api.js"></script>
+<script src="/js/auth.js"></script>
+<script>
+  const listingId = new URLSearchParams(location.search).get('id');
+  let listingData = null;
+  let currentImgIdx = 0;
+
+  document.addEventListener('DOMContentLoaded', async () => {
+    renderNav(getCurrentUser());
+    if (API.token) loadNotifBadge();
+    if (!listingId) {
+      document.getElementById('listing-container').innerHTML = '<div class="empty-state"><p>Annonce introuvable</p></div>';
+      return;
+    }
+    await loadListing();
+  });
+
+  async function loadListing() {
+    try {
+      const data = await API.get(`/api/listings/${listingId}`);
+      listingData = data;
+      document.title = `${data.title} — SafeTrade`;
+      renderListing(data);
+    } catch (e) {
+      document.getElementById('listing-container').innerHTML = `<div class="empty-state"><p style="color:var(--danger)">${e.message}</p></div>`;
+    }
+  }
+
+  function renderListing(d) {
+    const user = getCurrentUser();
+    const isSeller = user && user.id === d.seller_id;
+    const isActive = d.status === 'active';
+    const feePercent = 5;
+    const fee = +(d.price * feePercent / 100).toFixed(2);
+    const sellerPayout = +(d.price - fee).toFixed(2);
+
+    const images = d.images && d.images.length ? d.images : [{ url: `/api/placeholder/${d.id}` }];
+
+    const condLabel = CONDITION_LABELS[d.condition] || { label: d.condition, class: 'badge-secondary' };
+    const statusLabel = d.status === 'active' ? null :
+      d.status === 'reserved' ? '<span class="badge badge-warning">Réservé</span>' :
+      d.status === 'sold' ? '<span class="badge badge-secondary">Vendu</span>' : null;
+
+    document.getElementById('listing-container').innerHTML = `
+      <div class="detail-layout">
+        <!-- Images -->
+        <div>
+          <div class="carousel">
+            <div class="carousel-main">
+              <img id="carousel-img" src="${images[0].url}" alt="${d.title}">
+            </div>
+            ${images.length > 1 ? `
+            <button class="carousel-btn carousel-btn-prev" onclick="changeImg(-1)">←</button>
+            <button class="carousel-btn carousel-btn-next" onclick="changeImg(1)">→</button>
+            <div class="carousel-thumbs">
+              ${images.map((img, i) => `<div class="carousel-thumb ${i===0?'active':''}" onclick="setImg(${i})"><img src="${img.url}" alt=""></div>`).join('')}
+            </div>` : ''}
+          </div>
+
+          <!-- Description -->
+          <div class="card" style="margin-top:1.5rem">
+            <div class="card-header"><h3>Description</h3></div>
+            <div class="card-body">
+              <p style="white-space:pre-wrap;color:var(--text);line-height:1.8">${escapeHtml(d.description)}</p>
+            </div>
+          </div>
+
+          <!-- Seller ratings -->
+          <div class="card" style="margin-top:1.5rem">
+            <div class="card-header">
+              <h3>Avis sur ce vendeur</h3>
+              <span style="font-size:0.85rem;color:var(--text-muted)">${d.seller_rating_count} avis</span>
+            </div>
+            <div class="card-body" id="ratings-container">
+              <div class="loading-overlay" style="min-height:80px"><div class="spinner"></div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div>
+          <!-- Price card -->
+          <div class="card" style="position:sticky;top:80px">
+            <div class="card-body">
+              <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:0.75rem">
+                <h1 style="font-size:2rem;color:var(--primary)">${formatPrice(d.price)}</h1>
+                ${statusLabel || ''}
+              </div>
+              <h2 style="font-size:1.1rem;font-weight:600;margin-bottom:0.75rem">${escapeHtml(d.title)}</h2>
+              <div style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-bottom:1rem">
+                <span class="badge ${condLabel.class}">${condLabel.label}</span>
+                <span class="badge badge-secondary">${d.category}</span>
+                <span style="font-size:0.8rem;color:var(--text-muted)">👁 ${d.views} vues</span>
+              </div>
+
+              ${isActive && !isSeller && user ? `
+              <button class="btn btn-primary btn-full btn-lg" onclick="openBuyModal()">
+                🛒 Acheter maintenant
+              </button>
+              <p style="text-align:center;font-size:0.8rem;color:var(--text-muted);margin-top:0.5rem">Solde: ${formatPrice(user.balance)}</p>
+              ` : ''}
+
+              ${isActive && !isSeller && !user ? `
+              <a href="/login.html" class="btn btn-primary btn-full btn-lg">🔑 Se connecter pour acheter</a>
+              ` : ''}
+
+              ${isSeller ? `<div class="alert alert-info">Ceci est votre annonce</div>` : ''}
+              ${!isActive && !isSeller ? `<div class="alert alert-warning">${d.status === 'sold' ? 'Cet article a été vendu' : 'Cet article n\'est plus disponible'}</div>` : ''}
+
+              ${isActive && !isSeller && user ? `
+              <button class="btn btn-secondary btn-full" style="margin-top:0.75rem" onclick="openMsgModal()">
+                💬 Contacter le vendeur
+              </button>` : ''}
+
+              <div class="divider"></div>
+
+              <!-- Seller info -->
+              <div style="display:flex;align-items:center;gap:0.875rem;margin-bottom:1rem">
+                <div class="profile-avatar" style="width:48px;height:48px;font-size:1.2rem">
+                  ${d.seller_avatar ? `<img src="${d.seller_avatar}" alt="">` : d.seller_name.charAt(0).toUpperCase()}
+                </div>
+                <div>
+                  <a href="/profile.html?id=${d.seller_id || d.seller_user_id}" style="font-weight:700;color:var(--text)">${escapeHtml(d.seller_name)}</a>
+                  <div style="font-size:0.8rem">${starsHtml(d.seller_rating)} (${d.seller_rating_count || 0} avis)</div>
+                </div>
+              </div>
+
+              <!-- Fee breakdown -->
+              <div class="fee-breakdown">
+                <div style="font-weight:700;margin-bottom:0.5rem;font-size:0.85rem">Détail des frais</div>
+                <div class="fee-row"><span>Prix de vente</span><span>${formatPrice(d.price)}</span></div>
+                <div class="fee-row" style="color:var(--text-muted);font-size:0.85rem"><span>Frais plateforme (5%)</span><span>-${formatPrice(fee)}</span></div>
+                <div class="fee-row total"><span>Payout vendeur</span><span style="color:var(--success)">${formatPrice(sellerPayout)}</span></div>
+              </div>
+
+              <!-- Security features -->
+              <div class="divider"></div>
+              <div class="security-features">
+                <div style="font-weight:700;font-size:0.875rem;color:var(--primary);margin-bottom:0.5rem">🛡️ Protection SafeTrade</div>
+                <div class="security-feature"><span class="security-feature-icon">🔒</span><span>Fonds placés en séquestre jusqu'à confirmation</span></div>
+                <div class="security-feature"><span class="security-feature-icon">🎬</span><span>Unboxing vidéo avec code unique obligatoire</span></div>
+                <div class="security-feature"><span class="security-feature-icon">⚖️</span><span>Litige traité par notre équipe en 24h</span></div>
+                <div class="security-feature"><span class="security-feature-icon">↩️</span><span>Remboursement si l'article ne correspond pas</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+
+    loadRatings(d.seller_user_id || d.seller_id);
+  }
+
+  async function loadRatings(userId) {
+    try {
+      const ratings = await API.get(`/api/ratings/user/${userId}`);
+      const container = document.getElementById('ratings-container');
+      if (!ratings.length) {
+        container.innerHTML = '<p style="color:var(--text-muted);font-size:0.9rem">Aucun avis pour ce vendeur</p>';
+        return;
+      }
+      container.innerHTML = ratings.map(r => `
+        <div style="padding:0.75rem 0;border-bottom:1px solid var(--border)">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.3rem">
+            <strong style="font-size:0.85rem">${escapeHtml(r.rater_name)}</strong>
+            <div>${starsHtml(r.score)}</div>
+          </div>
+          ${r.comment ? `<p style="font-size:0.85rem;margin:0">${escapeHtml(r.comment)}</p>` : ''}
+          <div style="font-size:0.75rem;color:var(--text-muted);margin-top:0.25rem">${formatDate(r.created_at)}</div>
+        </div>
+      `).join('');
+    } catch (e) {}
+  }
+
+  const imgs = () => listingData?.images?.length ? listingData.images : [{ url: `/api/placeholder/${listingId}` }];
+
+  function setImg(i) {
+    currentImgIdx = i;
+    document.getElementById('carousel-img').src = imgs()[i].url;
+    document.querySelectorAll('.carousel-thumb').forEach((t, ti) => t.classList.toggle('active', ti === i));
+  }
+
+  function changeImg(dir) {
+    const images = imgs();
+    currentImgIdx = (currentImgIdx + dir + images.length) % images.length;
+    setImg(currentImgIdx);
+  }
+
+  function openBuyModal() {
+    const user = getCurrentUser();
+    if (!user) { window.location.href = '/login.html'; return; }
+    const d = listingData;
+    const fee = +(d.price * 5 / 100).toFixed(2);
+    const sufficient = user.balance >= d.price;
+
+    document.getElementById('buy-modal-content').innerHTML = `
+      <div style="display:flex;gap:1rem;align-items:center;margin-bottom:1.5rem;padding:1rem;background:var(--bg-secondary);border-radius:var(--radius)">
+        <img src="${d.images?.[0]?.url || `/api/placeholder/${d.id}`}" style="width:80px;height:80px;object-fit:cover;border-radius:var(--radius-sm)">
+        <div>
+          <div style="font-weight:700">${escapeHtml(d.title)}</div>
+          <div style="color:var(--primary);font-size:1.25rem;font-weight:800">${formatPrice(d.price)}</div>
+        </div>
+      </div>
+      <div class="fee-breakdown" style="margin-bottom:1rem">
+        <div class="fee-row"><span>Prix</span><span>${formatPrice(d.price)}</span></div>
+        <div class="fee-row"><span>Votre solde</span><span style="color:${sufficient?'var(--success)':'var(--danger)'}">${formatPrice(user.balance)}</span></div>
+        <div class="fee-row total"><span>Solde après achat</span><span style="color:${sufficient?'var(--text)':'var(--danger)'}">${formatPrice(user.balance - d.price)}</span></div>
+      </div>
+      ${!sufficient ? '<div class="alert alert-danger">Solde insuffisant. Rechargez votre compte dans le dashboard.</div>' : ''}
+      <div class="alert alert-info">Les fonds seront placés en séquestre. Vous devrez faire un unboxing vidéo après réception.</div>
+    `;
+
+    document.getElementById('confirm-buy-btn').disabled = !sufficient;
+    document.getElementById('buy-modal').style.display = 'flex';
+  }
+
+  function closeBuyModal() {
+    document.getElementById('buy-modal').style.display = 'none';
+  }
+
+  async function confirmPurchase() {
+    const btn = document.getElementById('confirm-buy-btn');
+    btn.disabled = true;
+    btn.textContent = 'Traitement...';
+    try {
+      const data = await API.post('/api/orders', { listingId: parseInt(listingId) });
+      showToast('Commande passée ! Fonds en séquestre.', 'success');
+      closeBuyModal();
+      setTimeout(() => window.location.href = `/order.html?id=${data.orderId}`, 1000);
+    } catch (e) {
+      showToast(e.message, 'error');
+      btn.disabled = false;
+      btn.textContent = "Confirmer l'achat";
+    }
+  }
+
+  function openMsgModal() {
+    const user = getCurrentUser();
+    if (!user) { window.location.href = '/login.html'; return; }
+    document.getElementById('msg-modal-info').innerHTML = `
+      <strong>Annonce :</strong> ${escapeHtml(listingData.title)}<br>
+      <strong>Vendeur :</strong> ${escapeHtml(listingData.seller_name)}
+    `;
+    document.getElementById('msg-modal').style.display = 'flex';
+  }
+
+  async function sendMessage() {
+    const body = document.getElementById('msg-body').value.trim();
+    if (!body) return showToast('Message vide', 'error');
+    try {
+      await API.post('/api/messages', {
+        recipientId: listingData.seller_id || listingData.seller_user_id,
+        body,
+        listingId: parseInt(listingId)
+      });
+      showToast('Message envoyé !');
+      document.getElementById('msg-modal').style.display = 'none';
+    } catch (e) {
+      showToast(e.message, 'error');
+    }
+  }
+
+  function escapeHtml(str) {
+    if (!str) return '';
+    return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+</script>
+</body>
+</html>

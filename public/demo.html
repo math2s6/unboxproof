@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Démo SafeTrade — Testez en direct</title>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f8fafc;color:#1e293b}
+    nav{background:#0f0f23;padding:16px 40px;display:flex;align-items:center;justify-content:space-between}
+    .nav-logo{color:white;font-size:20px;font-weight:700;text-decoration:none}
+    .nav-back{color:rgba(255,255,255,0.6);font-size:14px;text-decoration:none}
+    .nav-back:hover{color:white}
+    .hero{background:linear-gradient(135deg,#0f0f23,#1a1a3e);padding:60px 40px;text-align:center}
+    .hero h1{color:white;font-size:42px;font-weight:800;margin-bottom:16px}
+    .hero h1 span{background:linear-gradient(135deg,#818cf8,#c084fc);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+    .hero p{color:rgba(255,255,255,0.6);font-size:18px}
+    .container{max-width:800px;margin:0 auto;padding:60px 20px}
+    .wizard{background:white;border-radius:24px;box-shadow:0 4px 20px rgba(0,0,0,0.08);overflow:hidden}
+    .progress{height:6px;background:#e2e8f0}
+    .progress-bar{height:100%;background:linear-gradient(135deg,#4f46e5,#7c3aed);transition:width .5s ease}
+    .step{padding:40px;display:none}
+    .step.active{display:block}
+    .step-header{display:flex;align-items:center;gap:16px;margin-bottom:32px}
+    .step-num{width:48px;height:48px;background:linear-gradient(135deg,#4f46e5,#7c3aed);border-radius:14px;display:flex;align-items:center;justify-content:center;color:white;font-size:22px;font-weight:800;flex-shrink:0}
+    .step-header h2{font-size:24px;font-weight:800}
+    .step-header p{font-size:14px;color:#64748b;margin-top:4px}
+    label{display:block;font-size:14px;font-weight:600;color:#374151;margin-bottom:6px}
+    input,textarea,select{width:100%;padding:12px 16px;border:2px solid #e2e8f0;border-radius:10px;font-size:15px;font-family:inherit;outline:none;transition:border .2s;background:#fafafa}
+    input:focus,textarea:focus{border-color:#4f46e5;background:white}
+    .form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px}
+    .form-group{margin-bottom:20px}
+    .btn{padding:14px 28px;border-radius:12px;font-size:16px;font-weight:600;cursor:pointer;border:none;transition:all .2s;display:inline-flex;align-items:center;gap:8px}
+    .btn-primary{background:linear-gradient(135deg,#4f46e5,#7c3aed);color:white;width:100%;justify-content:center}
+    .btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(79,70,229,0.4)}
+    .btn-primary:disabled{opacity:.6;transform:none;cursor:not-allowed}
+    .success-box{background:#f0fdf4;border:2px solid #86efac;border-radius:16px;padding:24px;text-align:center;margin:20px 0}
+    .success-box .icon{font-size:48px;margin-bottom:12px}
+    .success-box h3{color:#059669;font-size:20px;font-weight:700;margin-bottom:8px}
+    .success-box p{color:#065f46;font-size:14px}
+    .code-box{background:#f0f0ff;border:2px dashed #4f46e5;border-radius:16px;padding:28px;text-align:center;margin:24px 0}
+    .code{font-size:42px;font-weight:900;letter-spacing:10px;color:#4f46e5;font-family:monospace}
+    .code-label{font-size:13px;color:#64748b;margin-top:8px}
+    .upload-zone{border:2px dashed #e2e8f0;border-radius:16px;padding:40px;text-align:center;cursor:pointer;transition:all .2s;background:#fafafa}
+    .upload-zone:hover,.upload-zone.drag{border-color:#4f46e5;background:#f0f0ff}
+    .upload-zone input{display:none}
+    .upload-icon{font-size:40px;margin-bottom:12px}
+    .upload-zone p{color:#64748b;font-size:14px}
+    .upload-previews{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+    .upload-preview{width:80px;height:80px;border-radius:10px;object-fit:cover;border:2px solid #e2e8f0}
+    .checkbox-group{display:flex;align-items:center;gap:10px;margin-bottom:16px;padding:14px;background:#f8fafc;border-radius:10px;cursor:pointer}
+    .checkbox-group input{width:20px;height:20px;cursor:pointer;flex-shrink:0}
+    .checkbox-group label{margin:0;cursor:pointer;font-weight:500}
+    .ai-result{border-radius:16px;padding:28px;margin:24px 0}
+    .ai-result.approve{background:#f0fdf4;border:2px solid #86efac}
+    .ai-result.review{background:#fffbeb;border:2px solid #fcd34d}
+    .ai-result.dispute{background:#fef2f2;border:2px solid #fca5a5}
+    .ai-score{font-size:48px;font-weight:900;margin-bottom:8px}
+    .ai-result.approve .ai-score{color:#059669}
+    .ai-result.review .ai-score{color:#d97706}
+    .ai-result.dispute .ai-score{color:#dc2626}
+    .ai-label{font-size:18px;font-weight:700;margin-bottom:16px}
+    .score-bar{height:12px;background:#e2e8f0;border-radius:6px;overflow:hidden;margin-bottom:20px}
+    .score-fill{height:100%;border-radius:6px;transition:width 1s ease}
+    .flags{list-style:none}
+    .flags li{padding:6px 0;font-size:14px;display:flex;align-items:center;gap:8px}
+    .flag-bad{color:#dc2626}
+    .flag-good{color:#059669}
+    .confetti{position:fixed;inset:0;pointer-events:none;z-index:9999}
+    .final-success{text-align:center;padding:20px 0}
+    .final-success .icon{font-size:80px;margin-bottom:20px;animation:bounce .6s ease}
+    @keyframes bounce{0%,100%{transform:scale(1)}50%{transform:scale(1.2)}}
+    .final-success h2{font-size:32px;font-weight:800;color:#059669;margin-bottom:12px}
+    .final-success p{color:#64748b;font-size:16px;line-height:1.6;margin-bottom:28px}
+    .final-links{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+    .final-links a{padding:12px 24px;border-radius:10px;font-weight:600;font-size:15px;text-decoration:none;transition:all .2s}
+    .link-primary{background:#4f46e5;color:white}
+    .link-primary:hover{background:#3730a3}
+    .link-ghost{background:#f1f5f9;color:#1e293b}
+    .link-ghost:hover{background:#e2e8f0}
+    .loading{display:inline-block;width:20px;height:20px;border:3px solid rgba(255,255,255,0.3);border-top-color:white;border-radius:50%;animation:spin .6s linear infinite}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .step-divider{height:1px;background:#f1f5f9;margin:24px 0}
+    .info-row{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #f1f5f9;font-size:14px}
+    .info-row:last-child{border-bottom:none}
+    .info-label{color:#64748b}
+    .info-value{font-weight:600}
+    @media(max-width:600px){.form-row{grid-template-columns:1fr}.hero{padding:40px 20px}.hero h1{font-size:28px}}
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="/landing.html" class="nav-logo">🛡️ SafeTrade</a>
+  <a href="/landing.html" class="nav-back">← Retour</a>
+</nav>
+
+<div class="hero">
+  <h1>Testez SafeTrade <span>en direct</span></h1>
+  <p>Simulez le flux complet en 60 secondes — aucun compte requis</p>
+</div>
+
+<div class="container">
+  <div class="wizard">
+    <div class="progress"><div class="progress-bar" id="progress" style="width:25%"></div></div>
+
+    <!-- STEP 1 -->
+    <div class="step active" id="step1">
+      <div class="step-header">
+        <div class="step-num">1</div>
+        <div><h2>Créer une commande</h2><p>Simulez une commande entrante sur votre boutique</p></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Nom du produit</label>
+          <input type="text" id="product_name" value="Nike Air Max 90">
+        </div>
+        <div class="form-group">
+          <label>Montant (€)</label>
+          <input type="number" id="order_amount" value="120">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Email client</label>
+        <input type="email" id="customer_email" value="client@example.com">
+      </div>
+      <button class="btn btn-primary" id="btn1" onclick="createOrder()">
+        🛒 Créer la commande →
+      </button>
+    </div>
+
+    <!-- STEP 2 -->
+    <div class="step" id="step2">
+      <div class="step-header">
+        <div class="step-num">2</div>
+        <div><h2>Expédier la commande</h2><p>La boutique ajoute un numéro de suivi</p></div>
+      </div>
+      <div class="success-box">
+        <div class="icon">✅</div>
+        <h3>Commande #<span id="order-id-display">-</span> créée !</h3>
+        <p>Le client a reçu un email de confirmation. Un code unique a été généré.</p>
+      </div>
+      <div class="form-group">
+        <label>Numéro de suivi</label>
+        <input type="text" id="tracking" value="FR700123456789">
+      </div>
+      <div class="form-group">
+        <label>Transporteur</label>
+        <input type="text" id="carrier" value="Colissimo">
+      </div>
+      <button class="btn btn-primary" id="btn2" onclick="shipOrder()">
+        📦 Marquer comme expédié →
+      </button>
+    </div>
+
+    <!-- STEP 3 -->
+    <div class="step" id="step3">
+      <div class="step-header">
+        <div class="step-num">3</div>
+        <div><h2>Livraison reçue</h2><p>Le client reçoit son colis et voit son code</p></div>
+      </div>
+      <div class="success-box">
+        <div class="icon">📦</div>
+        <h3>Colis livré !</h3>
+        <p>Le client reçoit un email avec son code d'unboxing et le lien pour filmer.</p>
+      </div>
+      <div class="code-box">
+        <div class="code" id="verif-code">----</div>
+        <div class="code-label">⚠️ Le client doit noter ce code et le montrer dans sa vidéo</div>
+      </div>
+      <div style="background:#f8fafc;border-radius:12px;padding:20px;margin-bottom:24px">
+        <p style="font-size:13px;color:#64748b;font-weight:600;margin-bottom:12px">RÉCAPITULATIF COMMANDE</p>
+        <div class="info-row"><span class="info-label">Produit</span><span class="info-value" id="recap-product">-</span></div>
+        <div class="info-row"><span class="info-label">Client</span><span class="info-value" id="recap-email">-</span></div>
+        <div class="info-row"><span class="info-label">Montant</span><span class="info-value" id="recap-amount">-</span></div>
+        <div class="info-row"><span class="info-label">Tracking</span><span class="info-value" id="recap-tracking">-</span></div>
+      </div>
+      <button class="btn btn-primary" id="btn3" onclick="confirmDelivery()">
+        ✅ Confirmer la livraison →
+      </button>
+    </div>
+
+    <!-- STEP 4 -->
+    <div class="step" id="step4">
+      <div class="step-header">
+        <div class="step-num">4</div>
+        <div><h2>Soumettre l'unboxing</h2><p>Le client filme l'ouverture du colis avec le code visible</p></div>
+      </div>
+      <div style="background:#fffbeb;border:1px solid #fcd34d;border-radius:12px;padding:16px;margin-bottom:24px;font-size:14px;color:#92400e">
+        💡 <strong>Instructions client :</strong> Écrire le code <strong id="code-reminder">----</strong> sur un papier, le montrer au début et à la fin de la vidéo.
+      </div>
+      <div class="form-group">
+        <label>Photos de l'unboxing (optionnel dans la démo)</label>
+        <div class="upload-zone" id="upload-zone" onclick="document.getElementById('photo-input').click()" ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')" ondrop="handleDrop(event)">
+          <input type="file" id="photo-input" multiple accept="image/*" onchange="handleFiles(this.files)">
+          <div class="upload-icon">📸</div>
+          <p><strong>Cliquez ou glissez des photos</strong><br>JPG, PNG jusqu'à 10MB</p>
+        </div>
+        <div class="upload-previews" id="previews"></div>
+      </div>
+      <div class="checkbox-group" onclick="toggle('check1')">
+        <input type="checkbox" id="check1" checked>
+        <label for="check1">✅ Le code de vérification est visible dans les photos/vidéo</label>
+      </div>
+      <div class="checkbox-group" onclick="toggle('check2')">
+        <input type="checkbox" id="check2" checked>
+        <label for="check2">✅ Le produit correspond à la description de la commande</label>
+      </div>
+      <div class="form-group">
+        <label>Notes (optionnel)</label>
+        <textarea id="notes" rows="2" placeholder="Tout est parfait !" style="resize:none"></textarea>
+      </div>
+      <button class="btn btn-primary" id="btn4" onclick="submitUnboxing()">
+        🤖 Analyser avec l'IA →
+      </button>
+    </div>
+
+    <!-- STEP 5 (result) -->
+    <div class="step" id="step5">
+      <div class="step-header">
+        <div class="step-num">5</div>
+        <div><h2>Résultat de l'analyse IA</h2><p>SafeTrade a analysé l'unboxing automatiquement</p></div>
+      </div>
+      <div class="ai-result" id="ai-result">
+        <div class="ai-score" id="ai-score">0%</div>
+        <div class="ai-label" id="ai-label">Analyse en cours...</div>
+        <div class="score-bar"><div class="score-fill" id="score-fill" style="width:0%"></div></div>
+        <ul class="flags" id="flags-list"></ul>
+      </div>
+      <button class="btn btn-primary" id="btn5" onclick="completeOrder()">
+        ✅ Valider la commande →
+      </button>
+    </div>
+
+    <!-- STEP 6 (final) -->
+    <div class="step" id="step6">
+      <div class="final-success">
+        <div class="icon">🎉</div>
+        <h2>Transaction complétée !</h2>
+        <p>Voilà comment SafeTrade protège chaque commande.<br>Le vendeur est payé, le client est protégé, zéro fraude.</p>
+        <div class="final-links">
+          <a href="/company/register.html" class="final-links a link-primary">🚀 Créer mon compte entreprise</a>
+          <a href="/roi.html" class="link-ghost">📊 Calculer mon ROI</a>
+          <a href="/landing.html" class="link-ghost">← Retour</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<canvas class="confetti" id="confetti"></canvas>
+
+<script>
+let orderId, verifCode, trackingVal;
+const files = [];
+
+function showToast(msg, type='success') {
+  const t = document.createElement('div');
+  t.style.cssText = `position:fixed;bottom:24px;right:24px;background:${type==='error'?'#dc2626':'#059669'};color:white;padding:14px 20px;border-radius:12px;font-weight:600;z-index:9999;animation:fadein .3s`;
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 3000);
+}
+
+function setLoading(btnId, loading) {
+  const btn = document.getElementById(btnId);
+  if (loading) { btn.disabled = true; btn.innerHTML = '<div class="loading"></div> Traitement...'; }
+  else btn.disabled = false;
+}
+
+function goToStep(n) {
+  document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+  document.getElementById('step' + n).classList.add('active');
+  document.getElementById('progress').style.width = (n / 6 * 100) + '%';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function toggle(id) { document.getElementById(id).checked = !document.getElementById(id).checked; }
+
+function handleFiles(fileList) {
+  const previews = document.getElementById('previews');
+  Array.from(fileList).forEach(f => {
+    files.push(f);
+    const img = document.createElement('img');
+    img.className = 'upload-preview';
+    img.src = URL.createObjectURL(f);
+    previews.appendChild(img);
+  });
+}
+function handleDrop(e) {
+  e.preventDefault();
+  document.getElementById('upload-zone').classList.remove('drag');
+  handleFiles(e.dataTransfer.files);
+}
+
+async function createOrder() {
+  setLoading('btn1', true);
+  try {
+    const res = await fetch('/api/demo/order', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ product_name: document.getElementById('product_name').value, customer_email: document.getElementById('customer_email').value, order_amount: document.getElementById('order_amount').value })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error);
+    orderId = data.order_id;
+    verifCode = data.verification_code;
+    document.getElementById('order-id-display').textContent = orderId;
+    document.getElementById('btn1').textContent = '✅ Commande créée !';
+    setTimeout(() => goToStep(2), 600);
+  } catch(e) { showToast(e.message, 'error'); setLoading('btn1', false); }
+}
+
+async function shipOrder() {
+  setLoading('btn2', true);
+  trackingVal = document.getElementById('tracking').value;
+  try {
+    const res = await fetch(`/api/demo/orders/${orderId}/ship`, {
+      method: 'PATCH', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ tracking_number: trackingVal, carrier: document.getElementById('carrier').value })
+    });
+    if (!res.ok) throw new Error('Erreur');
+    document.getElementById('verif-code').textContent = verifCode;
+    document.getElementById('code-reminder').textContent = verifCode;
+    document.getElementById('recap-product').textContent = document.getElementById('product_name').value;
+    document.getElementById('recap-email').textContent = document.getElementById('customer_email').value;
+    document.getElementById('recap-amount').textContent = document.getElementById('order_amount').value + ' €';
+    document.getElementById('recap-tracking').textContent = trackingVal;
+    setTimeout(() => goToStep(3), 600);
+  } catch(e) { showToast(e.message, 'error'); setLoading('btn2', false); }
+}
+
+async function confirmDelivery() {
+  setLoading('btn3', true);
+  try {
+    await fetch(`/api/demo/orders/${orderId}/deliver`, { method: 'PATCH', headers: {'Content-Type':'application/json'}, body: '{}' });
+    setTimeout(() => goToStep(4), 600);
+  } catch(e) { showToast(e.message, 'error'); setLoading('btn3', false); }
+}
+
+async function submitUnboxing() {
+  setLoading('btn4', true);
+  try {
+    const fd = new FormData();
+    files.forEach(f => fd.append('photos', f));
+    fd.append('code_visible', document.getElementById('check1').checked);
+    fd.append('condition_ok', document.getElementById('check2').checked);
+    fd.append('notes', document.getElementById('notes').value);
+    const res = await fetch(`/api/demo/orders/${orderId}/submit`, { method: 'POST', body: fd });
+    const data = await res.json();
+    goToStep(5);
+    setTimeout(() => showAiResult(data), 300);
+  } catch(e) { showToast(e.message, 'error'); setLoading('btn4', false); }
+}
+
+function showAiResult(data) {
+  const pct = Math.round(data.ai_confidence * 100);
+  const rec = data.ai_recommendation;
+  const result = document.getElementById('ai-result');
+  result.className = 'ai-result ' + rec;
+  document.getElementById('ai-score').textContent = pct + '%';
+  document.getElementById('ai-label').textContent = data.ai_label;
+  const color = rec === 'approve' ? '#059669' : rec === 'review' ? '#d97706' : '#dc2626';
+  const fill = document.getElementById('score-fill');
+  fill.style.background = color;
+  setTimeout(() => fill.style.width = pct + '%', 100);
+  const flagsList = document.getElementById('flags-list');
+  flagsList.innerHTML = '';
+  (data.positives || []).forEach(p => { const li = document.createElement('li'); li.className = 'flag-good'; li.innerHTML = '✅ ' + p; flagsList.appendChild(li); });
+  (data.flags || []).forEach(f => { const li = document.createElement('li'); li.className = 'flag-bad'; li.innerHTML = '⚠️ ' + f; flagsList.appendChild(li); });
+}
+
+async function completeOrder() {
+  setLoading('btn5', true);
+  try {
+    await fetch(`/api/demo/orders/${orderId}/complete`, { method: 'POST', headers: {'Content-Type':'application/json'}, body: '{}' });
+    goToStep(6);
+    launchConfetti();
+  } catch(e) { showToast(e.message, 'error'); setLoading('btn5', false); }
+}
+
+function launchConfetti() {
+  const canvas = document.getElementById('confetti');
+  const ctx = canvas.getContext('2d');
+  canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+  const particles = Array.from({length: 120}, () => ({
+    x: Math.random() * canvas.width, y: -20,
+    vx: (Math.random() - 0.5) * 4, vy: Math.random() * 4 + 2,
+    color: ['#4f46e5','#7c3aed','#059669','#f59e0b','#ec4899'][Math.floor(Math.random()*5)],
+    size: Math.random() * 10 + 4, rot: Math.random() * 360, rotV: (Math.random()-0.5)*8
+  }));
+  let frame = 0;
+  function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    particles.forEach(p => {
+      p.y += p.vy; p.x += p.vx; p.rot += p.rotV; p.vy += 0.05;
+      ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.rot * Math.PI/180);
+      ctx.fillStyle = p.color; ctx.fillRect(-p.size/2, -p.size/4, p.size, p.size/2);
+      ctx.restore();
+    });
+    if (++frame < 180) requestAnimationFrame(draw);
+    else ctx.clearRect(0, 0, canvas.width, canvas.height);
+  }
+  draw();
+}
+</script>
+</body>
+</html>

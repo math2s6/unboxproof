@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Administration — SafeTrade</title>
+  <link rel="stylesheet" href="/css/main.css">
+</head>
+<body>
+
+<nav class="navbar">
+  <a href="/" class="nav-logo">SafeTrade Admin</a>
+  <div class="nav-actions">
+    <div id="nav-user" style="display:none" class="nav-user">
+      <span class="nav-balance" id="nav-balance">—</span>
+      <div class="dropdown">
+        <button class="nav-username-btn" id="nav-username-btn"><span id="nav-username">Admin</span> ▾</button>
+        <div class="dropdown-menu" id="user-dropdown" style="display:none">
+          <a href="/" class="dropdown-item">🏠 Marketplace</a>
+          <a href="/dashboard.html" class="dropdown-item">📊 Dashboard</a>
+          <div class="dropdown-divider"></div>
+          <button class="dropdown-item danger" onclick="logout()">🚪 Déconnexion</button>
+        </div>
+      </div>
+    </div>
+    <div id="nav-auth" style="display:flex;gap:0.5rem">
+      <a href="/login.html" class="btn btn-primary btn-sm">Connexion Admin</a>
+    </div>
+  </div>
+</nav>
+
+<div class="admin-layout">
+  <!-- Admin Sidebar -->
+  <div class="admin-sidebar">
+    <div style="padding:1rem 1.5rem;color:#94a3b8;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em">Administration</div>
+    <a class="admin-nav-item active" id="nav-overview" onclick="showSection('overview')">📊 Vue d'ensemble</a>
+    <a class="admin-nav-item" id="nav-disputes" onclick="showSection('disputes')">⚖️ Litiges</a>
+    <a class="admin-nav-item" id="nav-unboxing" onclick="showSection('unboxing')">🎬 Unboxings</a>
+    <a class="admin-nav-item" id="nav-users" onclick="showSection('users')">👥 Utilisateurs</a>
+    <div style="margin-top:auto;padding:1rem 1.5rem;border-top:1px solid #334155">
+      <a href="/" style="color:#94a3b8;font-size:0.85rem">← Retour au marketplace</a>
+    </div>
+  </div>
+
+  <!-- Admin Content -->
+  <div class="admin-content">
+    <div id="section-overview">
+      <h2 style="margin-bottom:1.5rem">Vue d'ensemble</h2>
+      <div id="stats-container">
+        <div class="loading-overlay"><div class="spinner"></div></div>
+      </div>
+
+      <div style="margin-top:2rem">
+        <h3 style="margin-bottom:1rem">Litiges en attente</h3>
+        <div id="disputes-overview-container">
+          <div class="loading-overlay"><div class="spinner"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="section-disputes" style="display:none">
+      <h2 style="margin-bottom:1.5rem">⚖️ Litiges ouverts</h2>
+      <div id="disputes-full-container">
+        <div class="loading-overlay"><div class="spinner"></div></div>
+      </div>
+    </div>
+
+    <div id="section-unboxing" style="display:none">
+      <h2 style="margin-bottom:1.5rem">🎬 Unboxings à vérifier</h2>
+      <div id="unboxing-container">
+        <div class="loading-overlay"><div class="spinner"></div></div>
+      </div>
+    </div>
+
+    <div id="section-users" style="display:none">
+      <h2 style="margin-bottom:1.5rem">👥 Gestion des utilisateurs</h2>
+      <div id="users-container">
+        <div class="loading-overlay"><div class="spinner"></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- RESOLVE DISPUTE MODAL -->
+<div id="resolve-modal" class="modal-overlay" style="display:none">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Résoudre le litige</h3>
+      <button class="modal-close" onclick="document.getElementById('resolve-modal').style.display='none'">✕</button>
+    </div>
+    <div class="modal-body">
+      <div id="resolve-dispute-info" style="margin-bottom:1rem;padding:0.875rem;background:var(--bg-secondary);border-radius:var(--radius-sm);font-size:0.9rem"></div>
+      <div class="form-group">
+        <label class="form-label">Décision <span>*</span></label>
+        <select id="resolve-resolution" class="form-control">
+          <option value="buyer">Rembourser l'acheteur</option>
+          <option value="seller">Libérer les fonds au vendeur</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Notes admin (optionnel)</label>
+        <textarea id="resolve-notes" class="form-control" rows="3" placeholder="Explication de la décision..."></textarea>
+      </div>
+      <div class="alert alert-warning">Cette action est irréversible. Les fonds seront immédiatement débloqués.</div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="document.getElementById('resolve-modal').style.display='none'">Annuler</button>
+      <button class="btn btn-primary" onclick="submitResolve()">Valider la décision</button>
+    </div>
+  </div>
+</div>
+
+<script src="/js/api.js"></script>
+<script src="/js/auth.js"></script>
+<script>
+  let currentDisputeId = null;
+  let currentSection = 'overview';
+
+  document.addEventListener('DOMContentLoaded', async () => {
+    const user = getCurrentUser();
+    if (!user || !API.token) { window.location.href = '/login.html'; return; }
+    if (user.role !== 'admin') { window.location.href = '/'; return; }
+    renderNav(user);
+    await loadOverview();
+  });
+
+  function showSection(section) {
+    currentSection = section;
+    ['overview', 'disputes', 'unboxing', 'users'].forEach(s => {
+      document.getElementById(`section-${s}`).style.display = s === section ? 'block' : 'none';
+      document.getElementById(`nav-${s}`).classList.toggle('active', s === section);
+    });
+    if (section === 'disputes') loadDisputesFull();
+    else if (section === 'unboxing') loadUnboxing();
+    else if (section === 'users') loadUsers();
+  }
+
+  async function loadOverview() {
+    try {
+      const stats = await API.get('/api/admin/stats');
+      document.getElementById('stats-container').innerHTML = `
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon">👥</div>
+            <div class="stat-value">${stats.users}</div>
+            <div class="stat-label">Utilisateurs</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">📋</div>
+            <div class="stat-value">${stats.listings}</div>
+            <div class="stat-label">Annonces actives</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">🛒</div>
+            <div class="stat-value">${stats.orders}</div>
+            <div class="stat-label">Commandes totales</div>
+          </div>
+          <div class="stat-card" style="border-color:var(--success)">
+            <div class="stat-icon">✅</div>
+            <div class="stat-value" style="color:var(--success)">${stats.completed}</div>
+            <div class="stat-label">Complétées</div>
+          </div>
+          <div class="stat-card" style="border-color:var(--danger)">
+            <div class="stat-icon">⚖️</div>
+            <div class="stat-value" style="color:var(--danger)">${stats.disputed}</div>
+            <div class="stat-label">En litige</div>
+          </div>
+          <div class="stat-card" style="border-color:var(--warning)">
+            <div class="stat-icon">🎬</div>
+            <div class="stat-value" style="color:var(--warning)">${stats.unboxingPending}</div>
+            <div class="stat-label">Unboxing en attente</div>
+          </div>
+          <div class="stat-card" style="border-color:var(--primary)">
+            <div class="stat-icon">💰</div>
+            <div class="stat-value" style="color:var(--primary)">${formatPrice(stats.revenue)}</div>
+            <div class="stat-label">Revenus plateforme</div>
+          </div>
+        </div>
+      `;
+
+      const disputes = await API.get('/api/admin/disputes');
+      const overviewEl = document.getElementById('disputes-overview-container');
+      if (!disputes.length) {
+        overviewEl.innerHTML = '<div class="alert alert-success">✅ Aucun litige en attente</div>';
+        return;
+      }
+      overviewEl.innerHTML = renderDisputesList(disputes.slice(0, 5));
+    } catch (e) {
+      document.getElementById('stats-container').innerHTML = `<div class="alert alert-danger">${e.message}</div>`;
+    }
+  }
+
+  async function loadDisputesFull() {
+    try {
+      const disputes = await API.get('/api/admin/disputes');
+      const el = document.getElementById('disputes-full-container');
+      if (!disputes.length) {
+        el.innerHTML = '<div class="alert alert-success" style="max-width:500px">✅ Aucun litige ouvert</div>';
+        return;
+      }
+      el.innerHTML = renderDisputesList(disputes);
+    } catch (e) {
+      document.getElementById('disputes-full-container').innerHTML = `<div class="alert alert-danger">${e.message}</div>`;
+    }
+  }
+
+  function renderDisputesList(disputes) {
+    return disputes.map(d => `
+      <div class="card" style="margin-bottom:1rem">
+        <div class="card-body">
+          <div style="display:flex;gap:1rem;align-items:flex-start;flex-wrap:wrap">
+            <div style="flex:1;min-width:250px">
+              <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.5rem">
+                <strong>Litige #${d.id}</strong>
+                <span class="badge badge-danger">Ouvert</span>
+              </div>
+              <div style="font-size:0.85rem;color:var(--text-muted);margin-bottom:0.25rem">Article: ${escHtml(d.title)}</div>
+              <div style="font-size:0.85rem;margin-bottom:0.5rem">
+                Acheteur: <strong>${escHtml(d.buyer_name)}</strong> vs Vendeur: <strong>${escHtml(d.seller_name)}</strong>
+              </div>
+              <div style="font-size:0.85rem;color:var(--text-muted)">Motif: ${escHtml(d.reason)}</div>
+            </div>
+            <div style="text-align:right">
+              <div style="font-size:1.25rem;font-weight:800;color:var(--primary)">${formatPrice(d.amount)}</div>
+              <div style="font-size:0.8rem;color:var(--text-muted)">${formatDateTime(d.created_at)}</div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:0.5rem">
+              <a href="/dispute.html?id=${d.id}" class="btn btn-ghost btn-sm" target="_blank">Voir détails</a>
+              <button class="btn btn-primary btn-sm" onclick="openResolveModal(${d.id}, '${escHtml(d.title)}', ${d.amount}, '${escHtml(d.buyer_name)}', '${escHtml(d.seller_name)}')">Résoudre</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  async function loadUnboxing() {
+    try {
+      const submissions = await API.get('/api/admin/unboxing/pending');
+      const el = document.getElementById('unboxing-container');
+      if (!submissions.length) {
+        el.innerHTML = '<div class="alert alert-success" style="max-width:500px">✅ Aucun unboxing en attente de vérification</div>';
+        return;
+      }
+      el.innerHTML = submissions.map(s => {
+        const photos = s.photo_urls || [];
+        return `
+          <div class="card" style="margin-bottom:1.5rem">
+            <div class="card-header">
+              <div>
+                <strong>Unboxing #${s.id}</strong> — Commande ${s.order_id}
+                <div style="font-size:0.85rem;color:var(--text-muted)">${escHtml(s.title)} • ${escHtml(s.buyer_name)} → ${escHtml(s.seller_name)}</div>
+              </div>
+              <div style="text-align:right">
+                <div style="font-weight:700;color:var(--primary)">${formatPrice(s.amount)}</div>
+                <div style="font-family:monospace;font-size:0.85rem;background:var(--bg-secondary);padding:0.25rem 0.5rem;border-radius:4px">CODE: ${s.verification_code}</div>
+              </div>
+            </div>
+            <div class="card-body">
+              ${s.video_url ? `<video src="${s.video_url}" controls style="width:100%;max-height:300px;background:#000;border-radius:var(--radius-sm);margin-bottom:1rem"></video>` : ''}
+              ${photos.length ? `
+              <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:0.5rem;margin-bottom:1rem">
+                ${photos.map(p => `<img src="${p}" style="aspect-ratio:1;object-fit:cover;border-radius:var(--radius-sm);cursor:pointer" onclick="window.open('${p}','_blank')">`).join('')}
+              </div>` : '<p style="color:var(--text-muted);font-size:0.9rem">Pas de photos</p>'}
+
+              <div style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-bottom:1rem">
+                <span class="badge ${s.code_visible_confirmed ? 'badge-success' : 'badge-warning'}">${s.code_visible_confirmed ? 'Code confirmé par acheteur ✓' : 'Code non confirmé par acheteur'}</span>
+                ${s.condition_matches !== null ? `<span class="badge ${s.condition_matches ? 'badge-success' : 'badge-danger'}">${s.condition_matches ? 'État conforme ✓' : 'État non conforme ✗'}</span>` : ''}
+              </div>
+
+              ${s.buyer_notes ? `<div style="padding:0.75rem;background:var(--bg-secondary);border-radius:var(--radius-sm);font-size:0.9rem;margin-bottom:1rem"><strong>Notes:</strong> ${escHtml(s.buyer_notes)}</div>` : ''}
+
+              <div class="alert alert-info" style="margin-bottom:1rem">
+                Vérifiez que le code <strong style="font-family:monospace">${s.verification_code}</strong> est visible dans la vidéo/photos.
+              </div>
+
+              <div style="display:flex;gap:0.75rem">
+                <button class="btn btn-success" onclick="verifyUnboxing(${s.id}, true)">✅ Code visible — Vérification OK</button>
+                <button class="btn btn-danger" onclick="verifyUnboxing(${s.id}, false)">❌ Code non visible</button>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    } catch (e) {
+      document.getElementById('unboxing-container').innerHTML = `<div class="alert alert-danger">${e.message}</div>`;
+    }
+  }
+
+  async function loadUsers() {
+    try {
+      const users = await API.get('/api/admin/users');
+      const el = document.getElementById('users-container');
+      el.innerHTML = `
+        <div class="card">
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Utilisateur</th>
+                  <th>Email</th>
+                  <th>Rôle</th>
+                  <th>Solde</th>
+                  <th>Séquestre</th>
+                  <th>Note</th>
+                  <th>Inscrit le</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${users.map(u => `
+                  <tr>
+                    <td>#${u.id}</td>
+                    <td style="font-weight:600">${escHtml(u.username)} ${u.is_banned ? '<span class="badge badge-danger">Banni</span>' : ''}</td>
+                    <td style="font-size:0.85rem">${escHtml(u.email)}</td>
+                    <td><span class="badge ${u.role === 'admin' ? 'badge-primary' : 'badge-secondary'}">${u.role}</span></td>
+                    <td>${formatPrice(u.balance)}</td>
+                    <td>${formatPrice(u.escrow_balance)}</td>
+                    <td>${starsHtml(u.rating_avg)} <small>(${u.rating_count})</small></td>
+                    <td style="font-size:0.8rem">${formatDate(u.created_at)}</td>
+                    <td>
+                      ${u.role !== 'admin' ? `<button class="btn ${u.is_banned ? 'btn-success' : 'btn-danger'} btn-sm" onclick="toggleBan(${u.id})">${u.is_banned ? 'Débannir' : 'Bannir'}</button>` : '—'}
+                    </td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      `;
+    } catch (e) {
+      document.getElementById('users-container').innerHTML = `<div class="alert alert-danger">${e.message}</div>`;
+    }
+  }
+
+  function openResolveModal(id, title, amount, buyer, seller) {
+    currentDisputeId = id;
+    document.getElementById('resolve-dispute-info').innerHTML = `
+      <div><strong>Article:</strong> ${escHtml(title)}</div>
+      <div><strong>Montant:</strong> ${formatPrice(amount)}</div>
+      <div><strong>Acheteur:</strong> ${escHtml(buyer)} | <strong>Vendeur:</strong> ${escHtml(seller)}</div>
+    `;
+    document.getElementById('resolve-notes').value = '';
+    document.getElementById('resolve-modal').style.display = 'flex';
+  }
+
+  async function submitResolve() {
+    const resolution = document.getElementById('resolve-resolution').value;
+    const notes = document.getElementById('resolve-notes').value;
+    try {
+      await API.post(`/api/admin/disputes/${currentDisputeId}/resolve`, { resolution, admin_notes: notes });
+      showToast(`Litige résolu en faveur du ${resolution === 'buyer' ? 'acheteur' : 'vendeur'}`);
+      document.getElementById('resolve-modal').style.display = 'none';
+      loadOverview();
+      if (currentSection === 'disputes') loadDisputesFull();
+    } catch (e) { showToast(e.message, 'error'); }
+  }
+
+  async function verifyUnboxing(id, verified) {
+    try {
+      await API.post(`/api/admin/unboxing/${id}/verify`, { verified });
+      showToast(verified ? 'Vérification confirmée' : 'Code marqué comme non visible');
+      loadUnboxing();
+    } catch (e) { showToast(e.message, 'error'); }
+  }
+
+  async function toggleBan(id) {
+    if (!confirm('Modifier le statut de cet utilisateur ?')) return;
+    try {
+      const data = await API.put(`/api/admin/users/${id}/ban`);
+      showToast(data.message);
+      loadUsers();
+    } catch (e) { showToast(e.message, 'error'); }
+  }
+
+  function escHtml(s) { return s ? String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') : ''; }
+</script>
+</body>
+</html>

@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SafeTrade Business — Connexion</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; height: 100vh; display: flex; overflow: hidden; background: #f8fafc; }
+
+    .left-panel {
+      width: 45%;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 3rem 4rem;
+      color: white;
+      position: relative;
+      overflow: hidden;
+    }
+    .left-panel::before {
+      content: '';
+      position: absolute;
+      top: -100px; right: -100px;
+      width: 400px; height: 400px;
+      border-radius: 50%;
+      background: rgba(79, 70, 229, 0.15);
+    }
+    .left-panel::after {
+      content: '';
+      position: absolute;
+      bottom: -150px; left: -50px;
+      width: 350px; height: 350px;
+      border-radius: 50%;
+      background: rgba(79, 70, 229, 0.1);
+    }
+    .brand-logo {
+      font-size: 1.75rem;
+      font-weight: 800;
+      color: white;
+      margin-bottom: 0.5rem;
+      position: relative;
+      z-index: 1;
+    }
+    .brand-badge {
+      display: inline-block;
+      background: rgba(79, 70, 229, 0.3);
+      border: 1px solid rgba(79, 70, 229, 0.5);
+      color: #a5b4fc;
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 0.2rem 0.6rem;
+      border-radius: 999px;
+      margin-bottom: 3rem;
+      position: relative;
+      z-index: 1;
+    }
+    .left-tagline {
+      font-size: 2.25rem;
+      font-weight: 700;
+      line-height: 1.2;
+      margin-bottom: 1.5rem;
+      position: relative;
+      z-index: 1;
+    }
+    .left-tagline span { color: #818cf8; }
+    .left-desc {
+      font-size: 1rem;
+      color: rgba(255,255,255,0.65);
+      line-height: 1.6;
+      margin-bottom: 3rem;
+      position: relative;
+      z-index: 1;
+    }
+    .value-props {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      position: relative;
+      z-index: 1;
+    }
+    .value-prop {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-size: 0.95rem;
+      color: rgba(255,255,255,0.85);
+    }
+    .value-prop-icon {
+      width: 36px;
+      height: 36px;
+      background: rgba(79, 70, 229, 0.25);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      flex-shrink: 0;
+    }
+    .demo-box {
+      margin-top: 3rem;
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 12px;
+      padding: 1.25rem 1.5rem;
+      position: relative;
+      z-index: 1;
+    }
+    .demo-box-title { font-size: 0.75rem; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.75rem; }
+    .demo-cred { font-family: 'Courier New', monospace; font-size: 0.85rem; color: #a5b4fc; margin: 0.25rem 0; }
+
+    .right-panel {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+    }
+    .login-card {
+      width: 100%;
+      max-width: 420px;
+    }
+    .login-title {
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: #0f172a;
+      margin-bottom: 0.5rem;
+    }
+    .login-subtitle {
+      color: #64748b;
+      font-size: 0.95rem;
+      margin-bottom: 2.5rem;
+    }
+    .form-group { margin-bottom: 1.25rem; }
+    .form-label {
+      display: block;
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: #374151;
+      margin-bottom: 0.4rem;
+    }
+    .form-input {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      color: #0f172a;
+      background: white;
+      transition: border-color 0.15s, box-shadow 0.15s;
+      outline: none;
+    }
+    .form-input:focus {
+      border-color: #4f46e5;
+      box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+    }
+    .btn-primary {
+      width: 100%;
+      padding: 0.875rem;
+      background: #4f46e5;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s, transform 0.1s;
+      margin-top: 0.5rem;
+    }
+    .btn-primary:hover { background: #4338ca; }
+    .btn-primary:active { transform: scale(0.99); }
+    .btn-primary:disabled { background: #a5b4fc; cursor: not-allowed; }
+    .error-msg {
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      color: #dc2626;
+      padding: 0.75rem 1rem;
+      border-radius: 8px;
+      font-size: 0.875rem;
+      margin-bottom: 1rem;
+      display: none;
+    }
+    .divider {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin: 1.75rem 0;
+      color: #94a3b8;
+      font-size: 0.85rem;
+    }
+    .divider::before, .divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: #e2e8f0;
+    }
+    .link-secondary {
+      display: block;
+      text-align: center;
+      color: #4f46e5;
+      font-size: 0.9rem;
+      font-weight: 500;
+      text-decoration: none;
+    }
+    .link-secondary:hover { text-decoration: underline; }
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      color: #64748b;
+      font-size: 0.85rem;
+      text-decoration: none;
+      margin-bottom: 2rem;
+    }
+    .back-link:hover { color: #0f172a; }
+
+    @media (max-width: 768px) {
+      .left-panel { display: none; }
+      .right-panel { padding: 1.5rem; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="left-panel">
+  <div class="brand-logo">SafeTrade</div>
+  <div class="brand-badge">Business API</div>
+  <h1 class="left-tagline">Protégez vos clients<br>avec <span>l'unboxing sécurisé</span></h1>
+  <p class="left-desc">Intégrez notre technologie de vérification par unboxing vidéo directement dans votre e-commerce. Zéro fraude, 100% confiance.</p>
+  <div class="value-props">
+    <div class="value-prop">
+      <div class="value-prop-icon">🛡️</div>
+      <span>Protégez vos clients contre la contrefaçon</span>
+    </div>
+    <div class="value-prop">
+      <div class="value-prop-icon">🤖</div>
+      <span>IA de détection de fraude en temps réel</span>
+    </div>
+    <div class="value-prop">
+      <div class="value-prop-icon">⚡</div>
+      <span>API simple à intégrer en 5 minutes</span>
+    </div>
+    <div class="value-prop">
+      <div class="value-prop-icon">📊</div>
+      <span>Dashboard temps réel pour vos équipes</span>
+    </div>
+  </div>
+  <div class="demo-box">
+    <div class="demo-box-title">Compte démo</div>
+    <div class="demo-cred">Email: contact@nike-demo.com</div>
+    <div class="demo-cred">Mot de passe: nike123</div>
+  </div>
+</div>
+
+<div class="right-panel">
+  <div class="login-card">
+    <a href="/" class="back-link">← Retour au marketplace</a>
+    <h1 class="login-title">Connexion entreprise</h1>
+    <p class="login-subtitle">Accédez à votre tableau de bord SafeTrade Business</p>
+
+    <div class="error-msg" id="error-msg"></div>
+
+    <form id="login-form">
+      <div class="form-group">
+        <label class="form-label" for="email">Email professionnel</label>
+        <input type="email" id="email" class="form-input" placeholder="contact@votre-entreprise.com" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="password">Mot de passe</label>
+        <input type="password" id="password" class="form-input" placeholder="••••••••" required>
+      </div>
+      <button type="submit" class="btn-primary" id="submit-btn">Se connecter</button>
+    </form>
+
+    <div class="divider">ou</div>
+    <a href="/company/register.html" class="link-secondary">Créer un compte entreprise →</a>
+    <br>
+    <a href="/company/docs.html" class="link-secondary" style="color:#64748b">Documentation API</a>
+  </div>
+</div>
+
+<script>
+  // Redirect if already logged in
+  if (localStorage.getItem('company_token')) {
+    window.location.href = '/company/';
+  }
+
+  document.getElementById('login-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn = document.getElementById('submit-btn');
+    const errEl = document.getElementById('error-msg');
+    btn.disabled = true;
+    btn.textContent = 'Connexion...';
+    errEl.style.display = 'none';
+
+    try {
+      const res = await fetch('/api/b2b/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: document.getElementById('email').value,
+          password: document.getElementById('password').value
+        })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Erreur de connexion');
+      localStorage.setItem('company_token', data.token);
+      localStorage.setItem('company_data', JSON.stringify(data.company));
+      window.location.href = '/company/';
+    } catch (err) {
+      errEl.textContent = err.message;
+      errEl.style.display = 'block';
+      btn.disabled = false;
+      btn.textContent = 'Se connecter';
+    }
+  });
+</script>
+</body>
+</html>

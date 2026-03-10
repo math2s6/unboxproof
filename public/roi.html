@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Calculateur ROI — SafeTrade</title>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f8fafc;color:#1e293b}
+    nav{background:#0f0f23;padding:16px 40px;display:flex;align-items:center;justify-content:space-between}
+    .nav-logo{color:white;font-size:20px;font-weight:700;text-decoration:none}
+    .nav-back{color:rgba(255,255,255,0.6);font-size:14px;text-decoration:none}
+    .nav-back:hover{color:white}
+    .hero{background:linear-gradient(135deg,#0f0f23,#1a1a3e);padding:60px 40px;text-align:center}
+    .hero h1{color:white;font-size:42px;font-weight:800;margin-bottom:12px}
+    .hero p{color:rgba(255,255,255,0.6);font-size:18px}
+    .container{max-width:1100px;margin:0 auto;padding:60px 20px}
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:32px;align-items:start}
+    .card{background:white;border-radius:24px;padding:36px;box-shadow:0 4px 20px rgba(0,0,0,0.06)}
+    h2{font-size:22px;font-weight:800;margin-bottom:24px}
+    .slider-group{margin-bottom:28px}
+    .slider-label{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+    .slider-label span{font-size:14px;font-weight:600;color:#374151}
+    .slider-value{font-size:18px;font-weight:800;color:#4f46e5;background:#ede9fe;padding:4px 12px;border-radius:8px}
+    input[type=range]{width:100%;height:8px;border-radius:4px;background:#e2e8f0;outline:none;cursor:pointer;-webkit-appearance:none}
+    input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;background:#4f46e5;border-radius:50%;cursor:pointer;box-shadow:0 2px 8px rgba(79,70,229,0.4)}
+    .slider-range{display:flex;justify-content:space-between;font-size:12px;color:#94a3b8;margin-top:4px}
+    .result-card{background:linear-gradient(135deg,#4f46e5,#7c3aed);color:white;border-radius:24px;padding:36px;box-shadow:0 20px 40px rgba(79,70,229,0.3)}
+    .result-card h2{color:white}
+    .result-main{text-align:center;padding:24px 0;border-bottom:1px solid rgba(255,255,255,0.2);margin-bottom:24px}
+    .result-label{font-size:14px;color:rgba(255,255,255,0.7);margin-bottom:4px}
+    .result-amount{font-size:56px;font-weight:900;color:white;line-height:1}
+    .result-sub{font-size:14px;color:rgba(255,255,255,0.7);margin-top:4px}
+    .result-roi{background:rgba(255,255,255,0.15);border-radius:16px;padding:20px;text-align:center;margin-bottom:20px}
+    .result-roi-num{font-size:48px;font-weight:900}
+    .result-roi-label{font-size:14px;color:rgba(255,255,255,0.8);margin-top:4px}
+    .result-rows{margin-bottom:24px}
+    .result-row{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.1);font-size:14px}
+    .result-row:last-child{border-bottom:none}
+    .result-row span:first-child{color:rgba(255,255,255,0.7)}
+    .result-row span:last-child{font-weight:700}
+    .btn-white{display:block;background:white;color:#4f46e5;padding:14px 28px;border-radius:12px;font-weight:700;font-size:16px;text-align:center;text-decoration:none;transition:all .2s;margin-top:4px}
+    .btn-white:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(0,0,0,0.2)}
+    .comparison{background:white;border-radius:24px;padding:36px;box-shadow:0 4px 20px rgba(0,0,0,0.06);margin-top:32px}
+    table{width:100%;border-collapse:collapse;margin-top:20px}
+    th{background:#f8fafc;padding:14px 16px;text-align:left;font-size:13px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.5px}
+    td{padding:14px 16px;border-bottom:1px solid #f1f5f9;font-size:15px}
+    tr:last-child td{border-bottom:none}
+    .td-bad{color:#dc2626;font-weight:600}
+    .td-good{color:#059669;font-weight:600}
+    .td-label{color:#64748b}
+    @media(max-width:768px){.grid{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+<nav>
+  <a href="/landing.html" class="nav-logo">🛡️ SafeTrade</a>
+  <a href="/landing.html" class="nav-back">← Retour</a>
+</nav>
+<div class="hero">
+  <h1>Calculez vos économies</h1>
+  <p>Découvrez combien SafeTrade peut vous faire économiser chaque mois</p>
+</div>
+<div class="container">
+  <div class="grid">
+    <div class="card">
+      <h2>⚙️ Vos paramètres</h2>
+      <div class="slider-group">
+        <div class="slider-label"><span>Commandes par mois</span><div class="slider-value" id="val-orders">5 000</div></div>
+        <input type="range" min="100" max="100000" step="100" value="5000" id="sl-orders" oninput="calc()">
+        <div class="slider-range"><span>100</span><span>100 000</span></div>
+      </div>
+      <div class="slider-group">
+        <div class="slider-label"><span>Taux de fraude actuel</span><div class="slider-value" id="val-fraud">3%</div></div>
+        <input type="range" min="0.5" max="15" step="0.5" value="3" id="sl-fraud" oninput="calc()">
+        <div class="slider-range"><span>0.5%</span><span>15%</span></div>
+      </div>
+      <div class="slider-group">
+        <div class="slider-label"><span>Valeur moyenne d'une commande</span><div class="slider-value" id="val-aov">120 €</div></div>
+        <input type="range" min="20" max="1000" step="5" value="120" id="sl-aov" oninput="calc()">
+        <div class="slider-range"><span>20 €</span><span>1 000 €</span></div>
+      </div>
+      <div class="slider-group">
+        <div class="slider-label"><span>Coût traitement litige</span><div class="slider-value" id="val-cost">45 €</div></div>
+        <input type="range" min="10" max="300" step="5" value="45" id="sl-cost" oninput="calc()">
+        <div class="slider-range"><span>10 €</span><span>300 €</span></div>
+      </div>
+    </div>
+
+    <div class="result-card">
+      <h2>📊 Vos économies estimées</h2>
+      <div class="result-main">
+        <div class="result-label">Économies annuelles avec SafeTrade</div>
+        <div class="result-amount" id="annual-savings">0 €</div>
+        <div class="result-sub">soit <span id="monthly-savings">0 €</span>/mois</div>
+      </div>
+      <div class="result-roi">
+        <div class="result-roi-num" id="roi-num">0x</div>
+        <div class="result-roi-label">Retour sur investissement (ROI)</div>
+      </div>
+      <div class="result-rows">
+        <div class="result-row"><span>Fraudes actuelles/mois</span><span id="frauds-now">0</span></div>
+        <div class="result-row"><span>Pertes actuelles/mois</span><span id="losses-now">0 €</span></div>
+        <div class="result-row"><span>Fraudes évitées (98%)</span><span id="frauds-saved">0</span></div>
+        <div class="result-row"><span>Coût SafeTrade Pro</span><span>99 €/mois</span></div>
+        <div class="result-row"><span>Retour sur invest.</span><span id="payback">0 jours</span></div>
+      </div>
+      <a href="/company/register.html" class="btn-white">🚀 Commencer à économiser →</a>
+    </div>
+  </div>
+
+  <div class="comparison">
+    <h2>📋 Comparaison détaillée</h2>
+    <table>
+      <thead><tr><th>Indicateur</th><th>Sans SafeTrade</th><th>Avec SafeTrade</th></tr></thead>
+      <tbody>
+        <tr><td class="td-label">Fraudes/mois</td><td class="td-bad" id="cmp-fraud-before">-</td><td class="td-good" id="cmp-fraud-after">-</td></tr>
+        <tr><td class="td-label">Coût fraudes/mois</td><td class="td-bad" id="cmp-cost-before">-</td><td class="td-good" id="cmp-cost-after">-</td></tr>
+        <tr><td class="td-label">Heures support/mois</td><td class="td-bad" id="cmp-hours-before">-</td><td class="td-good" id="cmp-hours-after">-</td></tr>
+        <tr><td class="td-label">Satisfaction client</td><td class="td-bad">Non mesurée</td><td class="td-good">98% confirmée</td></tr>
+        <tr><td class="td-label">Remboursements non justifiés</td><td class="td-bad">Fréquents</td><td class="td-good">Quasi nuls</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+function fmt(n) { return new Intl.NumberFormat('fr-FR').format(Math.round(n)) + ' €'; }
+function fmtN(n) { return new Intl.NumberFormat('fr-FR').format(Math.round(n)); }
+
+function calc() {
+  const orders = +document.getElementById('sl-orders').value;
+  const fraudRate = +document.getElementById('sl-fraud').value / 100;
+  const aov = +document.getElementById('sl-aov').value;
+  const litCost = +document.getElementById('sl-cost').value;
+
+  document.getElementById('val-orders').textContent = fmtN(orders).replace(' €','');
+  document.getElementById('val-fraud').textContent = (+document.getElementById('sl-fraud').value).toFixed(1) + '%';
+  document.getElementById('val-aov').textContent = aov + ' €';
+  document.getElementById('val-cost').textContent = litCost + ' €';
+
+  const fraudsNow = orders * fraudRate;
+  const lossNow = fraudsNow * (aov + litCost);
+  const fraudsSaved = fraudsNow * 0.98;
+  const monthlySavings = fraudsSaved * (aov + litCost) - 99;
+  const annualSavings = monthlySavings * 12;
+  const roi = monthlySavings / 99;
+  const paybackDays = Math.max(1, Math.round(99 / (monthlySavings / 30)));
+
+  document.getElementById('annual-savings').textContent = fmt(annualSavings);
+  document.getElementById('monthly-savings').textContent = fmt(monthlySavings);
+  document.getElementById('roi-num').textContent = roi.toFixed(1) + 'x';
+  document.getElementById('frauds-now').textContent = fmtN(fraudsNow);
+  document.getElementById('losses-now').textContent = fmt(lossNow);
+  document.getElementById('frauds-saved').textContent = fmtN(fraudsSaved);
+  document.getElementById('payback').textContent = paybackDays + ' jours';
+
+  document.getElementById('cmp-fraud-before').textContent = fmtN(fraudsNow);
+  document.getElementById('cmp-fraud-after').textContent = fmtN(fraudsNow * 0.02);
+  document.getElementById('cmp-cost-before').textContent = fmt(lossNow);
+  document.getElementById('cmp-cost-after').textContent = fmt(lossNow * 0.02 + 99);
+  document.getElementById('cmp-hours-before').textContent = fmtN(fraudsNow * 0.5) + 'h';
+  document.getElementById('cmp-hours-after').textContent = fmtN(fraudsNow * 0.5 * 0.02) + 'h';
+}
+
+calc();
+</script>
+</body>
+</html>

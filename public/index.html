@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SafeTrade — Marketplace sécurisé</title>
+  <link rel="stylesheet" href="/css/main.css">
+</head>
+<body>
+
+<!-- B2B BANNER -->
+<div id="b2b-banner" style="background:linear-gradient(135deg,#4f46e5,#7c3aed);color:white;text-align:center;padding:10px 20px;font-size:14px;display:flex;align-items:center;justify-content:center;gap:12px">
+  <span>🏢 Vous êtes une entreprise ? Intégrez la sécurité unboxing SafeTrade dans votre e-commerce.</span>
+  <a href="/landing.html" style="background:rgba(255,255,255,0.2);color:white;text-decoration:none;padding:4px 14px;border-radius:100px;font-weight:600;font-size:13px">Découvrir →</a>
+  <button onclick="document.getElementById('b2b-banner').style.display='none'" style="background:none;border:none;color:rgba(255,255,255,0.7);cursor:pointer;font-size:18px;padding:0;margin-left:8px">×</button>
+</div>
+
+<!-- NAVBAR -->
+<nav class="navbar">
+  <a href="/" class="nav-logo">SafeTrade</a>
+  <div class="nav-search">
+    <span class="nav-search-icon">🔍</span>
+    <input type="text" id="search-input" placeholder="Rechercher un article...">
+  </div>
+  <div class="nav-actions">
+    <div id="nav-auth" style="display:flex;gap:0.5rem">
+      <a href="/login.html" class="btn btn-ghost btn-sm">Connexion</a>
+      <a href="/register.html" class="btn btn-primary btn-sm">S'inscrire</a>
+    </div>
+    <div id="nav-user" style="display:none" class="nav-user">
+      <span class="nav-balance" id="nav-balance">—</span>
+      <div class="dropdown" style="position:relative">
+        <button class="nav-notif-btn" id="notif-btn" title="Notifications">
+          🔔
+          <span class="notif-badge" id="notif-badge" style="display:none">0</span>
+        </button>
+        <div class="notif-panel" id="notif-panel" style="display:none"></div>
+      </div>
+      <div class="dropdown">
+        <button class="nav-username-btn" id="nav-username-btn">
+          <span id="nav-username">Profil</span> ▾
+        </button>
+        <div class="dropdown-menu" id="user-dropdown" style="display:none">
+          <a href="/dashboard.html" class="dropdown-item">🏠 Mon tableau de bord</a>
+          <a href="/create-listing.html" class="dropdown-item">➕ Vendre un article</a>
+          <a href="/messages.html" class="dropdown-item">💬 Messages</a>
+          <div class="dropdown-divider"></div>
+          <button class="dropdown-item danger" onclick="logout()">🚪 Déconnexion</button>
+        </div>
+      </div>
+    </div>
+    <div id="nav-admin" style="display:none">
+      <a href="/admin/" class="btn btn-warning btn-sm">Admin</a>
+    </div>
+  </div>
+</nav>
+
+<!-- SECURITY BANNER -->
+<div class="security-banner">
+  🛡️ SafeTrade — Unboxing vidéo obligatoire • Paiement sécurisé par séquestre • Protection acheteur 100%
+</div>
+
+<!-- HERO -->
+<div class="hero">
+  <h1>Achetez et vendez en toute sécurité</h1>
+  <p>Le premier marketplace avec unboxing vidéo obligatoire. Votre argent est protégé jusqu'à la confirmation de réception.</p>
+  <div class="hero-search">
+    <input type="text" id="hero-search" placeholder="iPhone, Nike, MacBook...">
+    <button onclick="doSearch()">Rechercher</button>
+  </div>
+</div>
+
+<!-- MAIN CONTENT -->
+<div class="container">
+  <!-- Categories -->
+  <div class="category-chips" id="categories">
+    <span class="category-chip active" data-cat="">Tous les articles</span>
+    <span class="category-chip" data-cat="Electronics">📱 Électronique</span>
+    <span class="category-chip" data-cat="Clothing">👕 Vêtements</span>
+    <span class="category-chip" data-cat="Books">📚 Livres</span>
+    <span class="category-chip" data-cat="Sports">⚽ Sports</span>
+    <span class="category-chip" data-cat="Home">🏠 Maison</span>
+  </div>
+
+  <!-- Filters bar -->
+  <div style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap;padding:0.5rem 0 1rem">
+    <select class="form-control" id="filter-condition" style="max-width:160px">
+      <option value="">Tous états</option>
+      <option value="new">Neuf</option>
+      <option value="like_new">Comme neuf</option>
+      <option value="good">Bon état</option>
+      <option value="fair">État correct</option>
+    </select>
+    <input type="number" class="form-control" id="filter-min" placeholder="Prix min €" style="max-width:120px">
+    <input type="number" class="form-control" id="filter-max" placeholder="Prix max €" style="max-width:120px">
+    <button class="btn btn-secondary btn-sm" onclick="applyFilters()">Filtrer</button>
+    <button class="btn btn-ghost btn-sm" onclick="resetFilters()">Réinitialiser</button>
+    <span id="results-count" style="margin-left:auto;font-size:0.85rem;color:var(--text-muted)"></span>
+  </div>
+
+  <!-- Listings grid -->
+  <div id="listings-container">
+    <div class="loading-overlay"><div class="spinner"></div></div>
+  </div>
+
+  <!-- Pagination -->
+  <div id="pagination" style="display:flex;justify-content:center;gap:0.5rem;padding:2rem 0"></div>
+</div>
+
+<!-- HOW IT WORKS -->
+<div style="background:var(--card);border-top:1px solid var(--border);margin-top:3rem;padding:4rem 1.5rem">
+  <div class="container">
+    <h2 style="text-align:center;margin-bottom:0.5rem">Comment ça marche ?</h2>
+    <p style="text-align:center;margin-bottom:3rem">SafeTrade est le seul marketplace avec unboxing vidéo obligatoire</p>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:2rem">
+      <div style="text-align:center">
+        <div style="font-size:3rem;margin-bottom:1rem">🛒</div>
+        <h3>1. Achetez</h3>
+        <p style="font-size:0.9rem">Choisissez votre article. Les fonds sont placés en séquestre sécurisé.</p>
+      </div>
+      <div style="text-align:center">
+        <div style="font-size:3rem;margin-bottom:1rem">📦</div>
+        <h3>2. Expédition</h3>
+        <p style="font-size:0.9rem">Le vendeur expédie et fournit un numéro de suivi.</p>
+      </div>
+      <div style="text-align:center">
+        <div style="font-size:3rem;margin-bottom:1rem">🎬</div>
+        <h3>3. Unboxing</h3>
+        <p style="font-size:0.9rem">Filmez l'ouverture en montrant le code unique. Preuve irréfutable !</p>
+      </div>
+      <div style="text-align:center">
+        <div style="font-size:3rem;margin-bottom:1rem">✅</div>
+        <h3>4. Confirmez</h3>
+        <p style="font-size:0.9rem">Tout est ok ? Confirmez. Les fonds sont libérés au vendeur.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <div class="footer-grid">
+    <div>
+      <div class="footer-logo">SafeTrade</div>
+      <p class="footer-desc">Le marketplace sécurisé avec unboxing vidéo obligatoire. Achetez et vendez sans risque.</p>
+    </div>
+    <div>
+      <div class="footer-title">Acheteurs</div>
+      <ul class="footer-links">
+        <li><a href="/">Parcourir les annonces</a></li>
+        <li><a href="/dashboard.html">Mes achats</a></li>
+        <li><a href="/messages.html">Mes messages</a></li>
+      </ul>
+    </div>
+    <div>
+      <div class="footer-title">Vendeurs</div>
+      <ul class="footer-links">
+        <li><a href="/create-listing.html">Vendre un article</a></li>
+        <li><a href="/dashboard.html">Mes ventes</a></li>
+      </ul>
+    </div>
+    <div>
+      <div class="footer-title">Sécurité</div>
+      <ul class="footer-links">
+        <li><a href="#">Unboxing obligatoire</a></li>
+        <li><a href="#">Séquestre</a></li>
+        <li><a href="#">Protection acheteur</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">© 2024 SafeTrade. Tous droits réservés.</div>
+</footer>
+
+<script src="/js/api.js"></script>
+<script src="/js/auth.js"></script>
+<script>
+  let currentPage = 1;
+  let currentCategory = '';
+  let currentQuery = '';
+
+  document.addEventListener('DOMContentLoaded', () => {
+    loadListings();
+
+    // Category chips
+    document.querySelectorAll('.category-chip').forEach(chip => {
+      chip.addEventListener('click', () => {
+        document.querySelectorAll('.category-chip').forEach(c => c.classList.remove('active'));
+        chip.classList.add('active');
+        currentCategory = chip.dataset.cat;
+        currentPage = 1;
+        loadListings();
+      });
+    });
+
+    // Search
+    const searchInput = document.getElementById('search-input');
+    let searchTimeout;
+    searchInput.addEventListener('input', () => {
+      clearTimeout(searchTimeout);
+      searchTimeout = setTimeout(() => {
+        currentQuery = searchInput.value;
+        document.getElementById('hero-search').value = searchInput.value;
+        currentPage = 1;
+        loadListings();
+      }, 400);
+    });
+  });
+
+  function doSearch() {
+    currentQuery = document.getElementById('hero-search').value;
+    document.getElementById('search-input').value = currentQuery;
+    currentPage = 1;
+    loadListings();
+    document.querySelector('.container').scrollIntoView({ behavior: 'smooth' });
+  }
+
+  document.getElementById('hero-search').addEventListener('keydown', e => {
+    if (e.key === 'Enter') doSearch();
+  });
+
+  function applyFilters() {
+    currentPage = 1;
+    loadListings();
+  }
+
+  function resetFilters() {
+    document.getElementById('filter-condition').value = '';
+    document.getElementById('filter-min').value = '';
+    document.getElementById('filter-max').value = '';
+    currentQuery = '';
+    currentCategory = '';
+    document.getElementById('search-input').value = '';
+    document.getElementById('hero-search').value = '';
+    document.querySelectorAll('.category-chip').forEach(c => c.classList.remove('active'));
+    document.querySelector('.category-chip').classList.add('active');
+    currentPage = 1;
+    loadListings();
+  }
+
+  async function loadListings() {
+    const container = document.getElementById('listings-container');
+    container.innerHTML = '<div class="loading-overlay"><div class="spinner"></div></div>';
+
+    const params = new URLSearchParams({
+      page: currentPage,
+      limit: 16,
+    });
+    if (currentQuery) params.set('q', currentQuery);
+    if (currentCategory) params.set('category', currentCategory);
+    const cond = document.getElementById('filter-condition')?.value;
+    const minP = document.getElementById('filter-min')?.value;
+    const maxP = document.getElementById('filter-max')?.value;
+    if (cond) params.set('condition', cond);
+    if (minP) params.set('minPrice', minP);
+    if (maxP) params.set('maxPrice', maxP);
+
+    try {
+      const data = await API.get(`/api/listings?${params}`);
+      const countEl = document.getElementById('results-count');
+      if (countEl) countEl.textContent = `${data.total} article${data.total !== 1 ? 's' : ''}`;
+
+      if (data.listings.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-state-icon">🔍</div>
+            <h3>Aucun article trouvé</h3>
+            <p>Essayez d'autres mots-clés ou filtres</p>
+          </div>`;
+        document.getElementById('pagination').innerHTML = '';
+        return;
+      }
+
+      container.innerHTML = `<div class="listings-grid">${data.listings.map(renderCard).join('')}</div>`;
+      renderPagination(data.page, data.pages);
+    } catch (e) {
+      container.innerHTML = `<div class="empty-state"><p style="color:var(--danger)">${e.message}</p></div>`;
+    }
+  }
+
+  function renderCard(item) {
+    const cond = CONDITION_LABELS[item.condition] || { label: item.condition, class: 'badge-secondary' };
+    const stars = starsHtml(item.seller_rating);
+    return `
+      <div class="listing-card" onclick="window.location.href='/listing.html?id=${item.id}'">
+        <div class="listing-card-img">
+          <img src="${item.thumbnail || '/api/placeholder/0'}" alt="${item.title}" loading="lazy">
+        </div>
+        <div class="listing-card-body">
+          <div class="listing-card-title">${item.title}</div>
+          <div class="listing-card-price">${formatPrice(item.price)}</div>
+          <div class="listing-card-meta">
+            <span class="badge ${cond.class}">${cond.label}</span>
+            <span title="${item.seller_name}">${stars} <small>${item.seller_name}</small></span>
+          </div>
+        </div>
+      </div>`;
+  }
+
+  function renderPagination(current, total) {
+    const el = document.getElementById('pagination');
+    if (total <= 1) { el.innerHTML = ''; return; }
+    let html = '';
+    if (current > 1) html += `<button class="btn btn-ghost btn-sm" onclick="goPage(${current - 1})">← Précédent</button>`;
+    for (let i = Math.max(1, current - 2); i <= Math.min(total, current + 2); i++) {
+      html += `<button class="btn ${i === current ? 'btn-primary' : 'btn-ghost'} btn-sm" onclick="goPage(${i})">${i}</button>`;
+    }
+    if (current < total) html += `<button class="btn btn-ghost btn-sm" onclick="goPage(${current + 1})">Suivant →</button>`;
+    el.innerHTML = html;
+  }
+
+  function goPage(p) {
+    currentPage = p;
+    loadListings();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+</script>
+</body>
+</html>

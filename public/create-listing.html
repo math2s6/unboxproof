@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vendre un article — SafeTrade</title>
+  <link rel="stylesheet" href="/css/main.css">
+</head>
+<body>
+
+<nav class="navbar">
+  <a href="/" class="nav-logo">SafeTrade</a>
+  <div class="nav-actions">
+    <div id="nav-auth" style="display:flex;gap:0.5rem">
+      <a href="/login.html" class="btn btn-ghost btn-sm">Connexion</a>
+      <a href="/register.html" class="btn btn-primary btn-sm">S'inscrire</a>
+    </div>
+    <div id="nav-user" style="display:none" class="nav-user">
+      <span class="nav-balance" id="nav-balance">—</span>
+      <div class="dropdown" style="position:relative">
+        <button class="nav-notif-btn" id="notif-btn">🔔<span class="notif-badge" id="notif-badge" style="display:none">0</span></button>
+        <div class="notif-panel" id="notif-panel" style="display:none"></div>
+      </div>
+      <div class="dropdown">
+        <button class="nav-username-btn" id="nav-username-btn"><span id="nav-username">Profil</span> ▾</button>
+        <div class="dropdown-menu" id="user-dropdown" style="display:none">
+          <a href="/dashboard.html" class="dropdown-item">🏠 Dashboard</a>
+          <a href="/messages.html" class="dropdown-item">💬 Messages</a>
+          <div class="dropdown-divider"></div>
+          <button class="dropdown-item danger" onclick="logout()">🚪 Déconnexion</button>
+        </div>
+      </div>
+    </div>
+    <div id="nav-admin" style="display:none"><a href="/admin/" class="btn btn-warning btn-sm">Admin</a></div>
+  </div>
+</nav>
+
+<div class="container-md" style="padding-top:2rem;padding-bottom:3rem">
+  <div style="margin-bottom:1.5rem">
+    <a href="/dashboard.html" style="color:var(--text-muted);font-size:0.9rem">← Mon tableau de bord</a>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 320px;gap:2rem;align-items:start">
+    <div>
+      <div class="card">
+        <div class="card-header">
+          <h2>Créer une annonce</h2>
+        </div>
+        <div class="card-body">
+          <form id="listing-form">
+
+            <!-- Images -->
+            <div class="form-group">
+              <label class="form-label">Photos (max 10)</label>
+              <div class="upload-zone" id="img-zone" onclick="document.getElementById('img-input').click()">
+                <input type="file" id="img-input" accept="image/*" multiple style="display:none" onchange="handleImages(event)">
+                <div class="upload-zone-icon">📷</div>
+                <div class="upload-zone-text">
+                  <strong>Cliquez pour ajouter des photos</strong><br>
+                  ou glissez-déposez vos images ici<br>
+                  <small style="color:var(--text-light)">JPG, PNG, WebP — max 10 Mo chacune</small>
+                </div>
+              </div>
+              <div class="upload-previews" id="img-previews"></div>
+            </div>
+
+            <!-- Title -->
+            <div class="form-group">
+              <label class="form-label" for="title">Titre <span>*</span></label>
+              <input type="text" id="title" class="form-control" placeholder="Ex: iPhone 13 Pro 256Go Graphite" maxlength="100" required oninput="updatePreview()">
+              <div class="form-hint"><span id="title-count">0</span>/100 caractères</div>
+            </div>
+
+            <!-- Description -->
+            <div class="form-group">
+              <label class="form-label" for="description">Description <span>*</span></label>
+              <textarea id="description" class="form-control" rows="6" placeholder="Décrivez l'état, les accessoires inclus, les défauts éventuels..." maxlength="2000" required oninput="updatePreview()"></textarea>
+              <div class="form-hint"><span id="desc-count">0</span>/2000 caractères</div>
+            </div>
+
+            <!-- Price + Category + Condition -->
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label" for="price">Prix (€) <span>*</span></label>
+                <input type="number" id="price" class="form-control" placeholder="0.00" min="1" max="100000" step="0.01" required oninput="updateFeePreview()">
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="category">Catégorie <span>*</span></label>
+                <select id="category" class="form-control" required>
+                  <option value="">Sélectionner...</option>
+                  <option value="Electronics">📱 Électronique</option>
+                  <option value="Clothing">👕 Vêtements</option>
+                  <option value="Books">📚 Livres</option>
+                  <option value="Sports">⚽ Sports</option>
+                  <option value="Home">🏠 Maison</option>
+                  <option value="Other">📦 Autre</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="condition">État <span>*</span></label>
+              <select id="condition" class="form-control" required onchange="updatePreview()">
+                <option value="">Sélectionner l'état...</option>
+                <option value="new">Neuf — jamais utilisé, avec emballage</option>
+                <option value="like_new">Comme neuf — excellent état, peu utilisé</option>
+                <option value="good">Bon état — traces d'utilisation légères</option>
+                <option value="fair">État correct — signes d'usure visibles</option>
+                <option value="poor">Mauvais état — défauts importants</option>
+              </select>
+            </div>
+
+            <!-- Fee preview -->
+            <div class="fee-breakdown" id="fee-preview" style="margin-bottom:1.25rem;display:none">
+              <div style="font-weight:700;margin-bottom:0.5rem">Simulation de gains</div>
+              <div class="fee-row"><span>Prix de vente</span><span id="fee-price">—</span></div>
+              <div class="fee-row" style="color:var(--text-muted);font-size:0.85rem"><span>Frais plateforme (5%)</span><span id="fee-amount">—</span></div>
+              <div class="fee-row total"><span>Vous recevrez</span><span id="fee-payout" style="color:var(--success)">—</span></div>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-full btn-lg" id="submit-btn">
+              🚀 Publier l'annonce
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tips sidebar -->
+    <div>
+      <div class="card" style="position:sticky;top:80px">
+        <div class="card-header"><h3>Conseils</h3></div>
+        <div class="card-body" style="font-size:0.875rem">
+          <div style="display:flex;flex-direction:column;gap:0.875rem">
+            <div style="display:flex;gap:0.75rem">
+              <span style="font-size:1.25rem">📸</span>
+              <div><strong>Bonnes photos</strong><br><span style="color:var(--text-muted)">Ajoutez 4-8 photos claires sous différents angles, incluant les défauts.</span></div>
+            </div>
+            <div style="display:flex;gap:0.75rem">
+              <span style="font-size:1.25rem">📝</span>
+              <div><strong>Description détaillée</strong><br><span style="color:var(--text-muted)">Mentionnez la marque, le modèle, l'état, les accessoires inclus et les défauts.</span></div>
+            </div>
+            <div style="display:flex;gap:0.75rem">
+              <span style="font-size:1.25rem">💰</span>
+              <div><strong>Prix compétitif</strong><br><span style="color:var(--text-muted)">Comparez avec d'autres annonces similaires. Un prix juste = vente rapide.</span></div>
+            </div>
+            <div style="display:flex;gap:0.75rem">
+              <span style="font-size:1.25rem">🎬</span>
+              <div><strong>Préparez votre unboxing</strong><br><span style="color:var(--text-muted)">L'acheteur devra filmer l'ouverture du colis. Emballez soigneusement.</span></div>
+            </div>
+          </div>
+
+          <div class="divider"></div>
+
+          <div style="background:rgba(79,70,229,0.06);border-radius:var(--radius-sm);padding:0.875rem;font-size:0.8rem">
+            <div style="font-weight:700;margin-bottom:0.3rem;color:var(--primary)">Frais de plateforme</div>
+            <p style="margin:0">SafeTrade prend 5% sur chaque vente pour garantir la sécurité des transactions.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="/js/api.js"></script>
+<script src="/js/auth.js"></script>
+<script>
+  const selectedFiles = [];
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const user = getCurrentUser();
+    if (!user || !API.token) {
+      window.location.href = '/login.html';
+      return;
+    }
+    renderNav(user);
+    loadNotifBadge();
+
+    // Drag & drop
+    const zone = document.getElementById('img-zone');
+    zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('dragging'); });
+    zone.addEventListener('dragleave', () => zone.classList.remove('dragging'));
+    zone.addEventListener('drop', e => {
+      e.preventDefault();
+      zone.classList.remove('dragging');
+      handleFilesArray(Array.from(e.dataTransfer.files));
+    });
+
+    // Character counts
+    document.getElementById('title').addEventListener('input', () => {
+      document.getElementById('title-count').textContent = document.getElementById('title').value.length;
+    });
+    document.getElementById('description').addEventListener('input', () => {
+      document.getElementById('desc-count').textContent = document.getElementById('description').value.length;
+    });
+
+    // Form submit
+    document.getElementById('listing-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById('submit-btn');
+      btn.disabled = true;
+      btn.textContent = 'Publication en cours...';
+
+      try {
+        const formData = new FormData();
+        formData.append('title', document.getElementById('title').value);
+        formData.append('description', document.getElementById('description').value);
+        formData.append('price', document.getElementById('price').value);
+        formData.append('category', document.getElementById('category').value);
+        formData.append('condition', document.getElementById('condition').value);
+        selectedFiles.forEach(f => formData.append('images', f));
+
+        const data = await API.postForm('/api/listings', formData);
+        showToast('Annonce publiée avec succès !');
+        setTimeout(() => window.location.href = `/listing.html?id=${data.id}`, 800);
+      } catch (err) {
+        showToast(err.message, 'error');
+        btn.disabled = false;
+        btn.textContent = 'Publier l\'annonce';
+      }
+    });
+  });
+
+  function handleImages(event) {
+    handleFilesArray(Array.from(event.target.files));
+  }
+
+  function handleFilesArray(files) {
+    files.forEach(file => {
+      if (!file.type.startsWith('image/')) return;
+      if (selectedFiles.length >= 10) { showToast('Maximum 10 photos', 'warning'); return; }
+      selectedFiles.push(file);
+      const reader = new FileReader();
+      reader.onload = (e) => addPreview(e.target.result, selectedFiles.length - 1);
+      reader.readAsDataURL(file);
+    });
+  }
+
+  function addPreview(src, idx) {
+    const el = document.createElement('div');
+    el.className = 'upload-preview';
+    el.id = `preview-${idx}`;
+    el.innerHTML = `
+      <img src="${src}" alt="">
+      <button class="upload-preview-remove" onclick="removePreview(${idx})">✕</button>
+    `;
+    document.getElementById('img-previews').appendChild(el);
+  }
+
+  function removePreview(idx) {
+    selectedFiles.splice(idx, 1);
+    document.getElementById('img-previews').innerHTML = '';
+    selectedFiles.forEach((f, i) => {
+      const reader = new FileReader();
+      reader.onload = (e) => addPreview(e.target.result, i);
+      reader.readAsDataURL(f);
+    });
+  }
+
+  function updateFeePreview() {
+    const price = parseFloat(document.getElementById('price').value);
+    const preview = document.getElementById('fee-preview');
+    if (!price || price <= 0) { preview.style.display = 'none'; return; }
+    const fee = +(price * 0.05).toFixed(2);
+    const payout = +(price - fee).toFixed(2);
+    document.getElementById('fee-price').textContent = formatPrice(price);
+    document.getElementById('fee-amount').textContent = `-${formatPrice(fee)}`;
+    document.getElementById('fee-payout').textContent = formatPrice(payout);
+    preview.style.display = 'block';
+  }
+
+  function updatePreview() {}
+</script>
+</body>
+</html>

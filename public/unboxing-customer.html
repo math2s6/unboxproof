@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SafeTrade — Soumettre votre unboxing</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f8fafc; min-height: 100vh; }
+
+    .top-bar {
+      background: #1a1a2e;
+      padding: 1rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .top-bar-logo { color: white; font-size: 1.1rem; font-weight: 800; }
+    .powered-by { color: rgba(255,255,255,0.5); font-size: 0.78rem; }
+    .powered-by span { color: #a5b4fc; }
+
+    .container { max-width: 620px; margin: 0 auto; padding: 2rem 1.5rem; }
+
+    /* Loading state */
+    .loading-card { background: white; border-radius: 16px; padding: 3rem; text-align: center; margin-bottom: 1.5rem; }
+    .spinner { width: 40px; height: 40px; border: 3px solid #e2e8f0; border-top-color: #4f46e5; border-radius: 50%; animation: spin 0.7s linear infinite; margin: 0 auto 1rem; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Order info card */
+    .order-card {
+      background: linear-gradient(135deg, #1a1a2e, #0f3460);
+      border-radius: 16px;
+      padding: 2rem;
+      color: white;
+      margin-bottom: 1.5rem;
+      text-align: center;
+    }
+    .order-product { font-size: 1.15rem; font-weight: 700; margin-bottom: 0.25rem; }
+    .order-label { font-size: 0.8rem; color: rgba(255,255,255,0.55); margin-bottom: 1.5rem; }
+
+    .code-display {
+      background: rgba(255,255,255,0.1);
+      border: 2px solid rgba(255,255,255,0.2);
+      border-radius: 12px;
+      padding: 1.25rem;
+      margin-bottom: 1.5rem;
+    }
+    .code-label { font-size: 0.75rem; color: rgba(255,255,255,0.55); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.5rem; }
+    .code-value { font-size: 3rem; font-weight: 900; letter-spacing: 0.3em; color: #fbbf24; font-family: 'Courier New', monospace; }
+
+    .instructions {
+      background: rgba(251, 191, 36, 0.1);
+      border: 1px solid rgba(251, 191, 36, 0.3);
+      border-radius: 10px;
+      padding: 1rem 1.25rem;
+    }
+    .instructions p { font-size: 0.875rem; color: rgba(255,255,255,0.85); line-height: 1.6; }
+    .instructions strong { color: #fbbf24; }
+
+    /* Form card */
+    .form-card {
+      background: white;
+      border-radius: 16px;
+      padding: 2rem;
+      margin-bottom: 1.5rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    }
+    .form-section-title { font-size: 1rem; font-weight: 700; color: #0f172a; margin-bottom: 1.25rem; display: flex; align-items: center; gap: 0.5rem; }
+
+    .upload-zone {
+      border: 2px dashed #e2e8f0;
+      border-radius: 12px;
+      padding: 2rem;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.15s;
+      margin-bottom: 1.25rem;
+      position: relative;
+    }
+    .upload-zone:hover { border-color: #4f46e5; background: #f5f3ff; }
+    .upload-zone.has-files { border-color: #22c55e; background: #f0fdf4; }
+    .upload-zone input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+    .upload-icon { font-size: 2.5rem; margin-bottom: 0.75rem; }
+    .upload-title { font-size: 0.95rem; font-weight: 600; color: #0f172a; margin-bottom: 0.3rem; }
+    .upload-sub { font-size: 0.8rem; color: #94a3b8; }
+    .upload-count { font-size: 0.875rem; color: #22c55e; font-weight: 600; margin-top: 0.5rem; }
+
+    .checkbox-group { display: flex; align-items: flex-start; gap: 0.75rem; margin-bottom: 1rem; cursor: pointer; }
+    .checkbox-group input[type="checkbox"] { width: 18px; height: 18px; accent-color: #4f46e5; flex-shrink: 0; margin-top: 2px; cursor: pointer; }
+    .checkbox-label { font-size: 0.9rem; color: #374151; line-height: 1.4; }
+    .checkbox-label strong { color: #0f172a; }
+
+    .form-group { margin-bottom: 1.25rem; }
+    .form-label { display: block; font-size: 0.85rem; font-weight: 500; color: #374151; margin-bottom: 0.4rem; }
+    .form-textarea {
+      width: 100%;
+      padding: 0.75rem;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 9px;
+      font-size: 0.9rem;
+      color: #0f172a;
+      resize: vertical;
+      min-height: 80px;
+      font-family: inherit;
+      outline: none;
+    }
+    .form-textarea:focus { border-color: #4f46e5; box-shadow: 0 0 0 3px rgba(79,70,229,0.1); }
+
+    .btn-submit {
+      width: 100%;
+      padding: 1rem;
+      background: #4f46e5;
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-size: 1.05rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .btn-submit:hover { background: #4338ca; }
+    .btn-submit:disabled { background: #a5b4fc; cursor: not-allowed; }
+
+    /* Success state */
+    .success-card {
+      display: none;
+      background: white;
+      border-radius: 16px;
+      padding: 3rem 2rem;
+      text-align: center;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    }
+    .success-icon { font-size: 4rem; margin-bottom: 1rem; }
+    .success-title { font-size: 1.5rem; font-weight: 800; color: #0f172a; margin-bottom: 0.75rem; }
+    .success-sub { color: #64748b; font-size: 0.95rem; line-height: 1.6; margin-bottom: 1.5rem; }
+    .ai-score-box { background: #f8fafc; border-radius: 12px; padding: 1.25rem; margin-bottom: 1rem; }
+    .ai-score-label { font-size: 0.75rem; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem; }
+    .ai-score-value { font-size: 2rem; font-weight: 800; }
+
+    /* Error state */
+    .error-card {
+      display: none;
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 1rem;
+      text-align: center;
+    }
+    .error-card p { color: #dc2626; font-weight: 500; }
+
+    /* Already submitted */
+    .submitted-card {
+      display: none;
+      background: #ede9fe;
+      border: 1px solid #c4b5fd;
+      border-radius: 12px;
+      padding: 1.5rem;
+      text-align: center;
+    }
+    .submitted-card p { color: #5b21b6; font-weight: 500; }
+  </style>
+</head>
+<body>
+
+<div class="top-bar">
+  <div class="top-bar-logo">SafeTrade</div>
+  <div class="powered-by">Sécurisé par <span>SafeTrade Business</span></div>
+</div>
+
+<div class="container">
+
+  <!-- Loading -->
+  <div class="loading-card" id="loading-card">
+    <div class="spinner"></div>
+    <p style="color:#64748b">Chargement de votre commande...</p>
+  </div>
+
+  <!-- Error -->
+  <div class="error-card" id="error-card">
+    <p id="error-text">Commande introuvable</p>
+  </div>
+
+  <!-- Already submitted -->
+  <div class="submitted-card" id="submitted-card">
+    <p>Vous avez déjà soumis votre unboxing pour cette commande. Merci !</p>
+  </div>
+
+  <!-- Order info -->
+  <div class="order-card" id="order-card" style="display:none">
+    <div class="order-product" id="order-product">—</div>
+    <div class="order-label">Commande en attente d'unboxing</div>
+    <div class="code-display">
+      <div class="code-label">Votre code de vérification</div>
+      <div class="code-value" id="code-value">----</div>
+    </div>
+    <div class="instructions">
+      <p><strong>Instructions :</strong> Écrivez ce code sur un papier. <strong>Montrez-le clairement au début et à la fin de votre vidéo.</strong> Ce code prouve que la vidéo est authentique et correspond à cette commande.</p>
+    </div>
+  </div>
+
+  <!-- Upload form -->
+  <div class="form-card" id="form-card" style="display:none">
+    <form id="unboxing-form" enctype="multipart/form-data">
+
+      <div class="form-section-title">🎬 Vidéo d'unboxing</div>
+      <div class="upload-zone" id="video-zone">
+        <input type="file" name="video" accept="video/*" id="video-input" onchange="onVideoChange(this)">
+        <div class="upload-icon">🎥</div>
+        <div class="upload-title">Sélectionner une vidéo</div>
+        <div class="upload-sub">MP4, MOV, AVI — max 500 Mo</div>
+        <div class="upload-count" id="video-count"></div>
+      </div>
+
+      <div class="form-section-title" style="margin-top:1.5rem">📸 Photos</div>
+      <div class="upload-zone" id="photos-zone">
+        <input type="file" name="photos" accept="image/*" multiple id="photos-input" onchange="onPhotosChange(this)">
+        <div class="upload-icon">📷</div>
+        <div class="upload-title">Sélectionner des photos</div>
+        <div class="upload-sub">JPG, PNG, WEBP — jusqu'à 10 photos, max 10 Mo chacune</div>
+        <div class="upload-count" id="photos-count"></div>
+      </div>
+
+      <div style="margin-top:1.5rem">
+        <label class="checkbox-group">
+          <input type="checkbox" name="code_visible" id="code-visible" value="true">
+          <span class="checkbox-label"><strong>Le code est visible</strong> dans ma vidéo/photos au début et à la fin</span>
+        </label>
+        <label class="checkbox-group">
+          <input type="checkbox" name="condition_ok" id="condition-ok" value="true" checked>
+          <span class="checkbox-label"><strong>Le produit correspond</strong> à ma commande (bon article, bon état)</span>
+        </label>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="notes">Notes additionnelles (optionnel)</label>
+        <textarea class="form-textarea" id="notes" name="notes" placeholder="Décrivez l'état du produit, ou signalez un problème..."></textarea>
+      </div>
+
+      <button type="submit" class="btn-submit" id="submit-btn">Soumettre mon unboxing</button>
+    </form>
+  </div>
+
+  <!-- Success -->
+  <div class="success-card" id="success-card">
+    <div class="success-icon">🎉</div>
+    <div class="success-title">Unboxing soumis !</div>
+    <div class="success-sub">Votre dossier a été envoyé avec succès. Le vendeur va examiner votre unboxing et vous contacter si nécessaire.</div>
+    <div class="ai-score-box">
+      <div class="ai-score-label">Score de confiance IA</div>
+      <div class="ai-score-value" id="ai-score-display">—</div>
+    </div>
+    <p style="font-size:0.8rem;color:#94a3b8">Conservez cette page comme preuve de soumission.</p>
+  </div>
+
+</div>
+
+<script>
+  const params = new URLSearchParams(window.location.search);
+  const orderId = params.get('order');
+  const codeParam = params.get('code');
+
+  if (!orderId) {
+    document.getElementById('loading-card').style.display = 'none';
+    document.getElementById('error-card').style.display = 'block';
+    document.getElementById('error-text').textContent = 'Lien invalide — paramètre "order" manquant.';
+  } else {
+    loadOrder();
+  }
+
+  async function loadOrder() {
+    try {
+      const res = await fetch(`/api/b2b/customer/${orderId}`);
+      const order = await res.json();
+      document.getElementById('loading-card').style.display = 'none';
+
+      if (!res.ok) {
+        document.getElementById('error-card').style.display = 'block';
+        document.getElementById('error-text').textContent = order.error || 'Commande introuvable';
+        return;
+      }
+
+      if (!['unboxing_pending', 'shipped', 'pending'].includes(order.status)) {
+        if (order.status === 'unboxing_submitted' || order.status === 'completed') {
+          document.getElementById('submitted-card').style.display = 'block';
+        } else {
+          document.getElementById('error-card').style.display = 'block';
+          document.getElementById('error-text').textContent = 'Cette commande n\'est pas disponible pour l\'unboxing (statut: ' + order.status + ')';
+        }
+        return;
+      }
+
+      document.getElementById('order-product').textContent = order.product_name;
+      document.getElementById('code-value').textContent = order.verification_code;
+      document.getElementById('order-card').style.display = 'block';
+      document.getElementById('form-card').style.display = 'block';
+    } catch (e) {
+      document.getElementById('loading-card').style.display = 'none';
+      document.getElementById('error-card').style.display = 'block';
+      document.getElementById('error-text').textContent = 'Erreur de connexion. Réessayez.';
+    }
+  }
+
+  function onVideoChange(input) {
+    const zone = document.getElementById('video-zone');
+    const count = document.getElementById('video-count');
+    if (input.files.length > 0) {
+      zone.classList.add('has-files');
+      count.textContent = `✓ ${input.files[0].name}`;
+    } else {
+      zone.classList.remove('has-files');
+      count.textContent = '';
+    }
+  }
+
+  function onPhotosChange(input) {
+    const zone = document.getElementById('photos-zone');
+    const count = document.getElementById('photos-count');
+    if (input.files.length > 0) {
+      zone.classList.add('has-files');
+      count.textContent = `✓ ${input.files.length} photo(s) sélectionnée(s)`;
+    } else {
+      zone.classList.remove('has-files');
+      count.textContent = '';
+    }
+  }
+
+  document.getElementById('unboxing-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn = document.getElementById('submit-btn');
+    btn.disabled = true;
+    btn.textContent = 'Envoi en cours...';
+
+    const form = e.target;
+    const formData = new FormData(form);
+
+    // Handle checkboxes
+    formData.set('code_visible', document.getElementById('code-visible').checked ? 'true' : 'false');
+    formData.set('condition_ok', document.getElementById('condition-ok').checked ? 'true' : 'false');
+
+    try {
+      const res = await fetch(`/api/b2b/customer/${orderId}/submit`, {
+        method: 'POST',
+        body: formData
+      });
+      const data = await res.json();
+
+      if (!res.ok) throw new Error(data.error || 'Erreur lors de la soumission');
+
+      document.getElementById('form-card').style.display = 'none';
+      document.getElementById('order-card').style.display = 'none';
+      document.getElementById('success-card').style.display = 'block';
+
+      const pct = Math.round((data.ai_confidence || 0) * 100);
+      const scoreEl = document.getElementById('ai-score-display');
+      scoreEl.textContent = pct + '%';
+      scoreEl.style.color = pct >= 80 ? '#22c55e' : pct >= 60 ? '#f59e0b' : '#ef4444';
+    } catch (err) {
+      alert('Erreur : ' + err.message);
+      btn.disabled = false;
+      btn.textContent = 'Soumettre mon unboxing';
+    }
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Commande — SafeTrade</title>
+  <link rel="stylesheet" href="/css/main.css">
+</head>
+<body>
+
+<nav class="navbar">
+  <a href="/" class="nav-logo">SafeTrade</a>
+  <div class="nav-actions">
+    <div id="nav-auth" style="display:flex;gap:0.5rem">
+      <a href="/login.html" class="btn btn-ghost btn-sm">Connexion</a>
+    </div>
+    <div id="nav-user" style="display:none" class="nav-user">
+      <span class="nav-balance" id="nav-balance">—</span>
+      <div class="dropdown" style="position:relative">
+        <button class="nav-notif-btn" id="notif-btn">🔔<span class="notif-badge" id="notif-badge" style="display:none">0</span></button>
+        <div class="notif-panel" id="notif-panel" style="display:none"></div>
+      </div>
+      <div class="dropdown">
+        <button class="nav-username-btn" id="nav-username-btn"><span id="nav-username">Profil</span> ▾</button>
+        <div class="dropdown-menu" id="user-dropdown" style="display:none">
+          <a href="/dashboard.html" class="dropdown-item">🏠 Dashboard</a>
+          <a href="/messages.html" class="dropdown-item">💬 Messages</a>
+          <div class="dropdown-divider"></div>
+          <button class="dropdown-item danger" onclick="logout()">🚪 Déconnexion</button>
+        </div>
+      </div>
+    </div>
+    <div id="nav-admin" style="display:none"><a href="/admin/" class="btn btn-warning btn-sm">Admin</a></div>
+  </div>
+</nav>
+
+<div class="container-md" style="padding-top:2rem;padding-bottom:3rem">
+  <a href="/dashboard.html" style="color:var(--text-muted);font-size:0.9rem">← Mon tableau de bord</a>
+
+  <div id="order-container" style="margin-top:1.5rem">
+    <div class="loading-overlay"><div class="spinner"></div></div>
+  </div>
+</div>
+
+<!-- SHIP MODAL -->
+<div id="ship-modal" class="modal-overlay" style="display:none">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Confirmer l'expédition</h3>
+      <button class="modal-close" onclick="document.getElementById('ship-modal').style.display='none'">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Transporteur</label>
+        <select id="ship-carrier" class="form-control">
+          <option value="La Poste">La Poste / Colissimo</option>
+          <option value="Chronopost">Chronopost</option>
+          <option value="DHL">DHL</option>
+          <option value="UPS">UPS</option>
+          <option value="Mondial Relay">Mondial Relay</option>
+          <option value="Autre">Autre</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Numéro de suivi <span>*</span></label>
+        <input type="text" id="ship-tracking" class="form-control" placeholder="Ex: 1A2B3C4D5E6F">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="document.getElementById('ship-modal').style.display='none'">Annuler</button>
+      <button class="btn btn-primary" onclick="confirmShip()">Confirmer l'envoi</button>
+    </div>
+  </div>
+</div>
+
+<script src="/js/api.js"></script>
+<script src="/js/auth.js"></script>
+<script>
+  const orderId = new URLSearchParams(location.search).get('id');
+  let orderData = null;
+  let currentUser = null;
+
+  document.addEventListener('DOMContentLoaded', async () => {
+    currentUser = getCurrentUser();
+    if (!currentUser || !API.token) { window.location.href = '/login.html'; return; }
+    renderNav(currentUser);
+    loadNotifBadge();
+    await loadOrder();
+  });
+
+  async function loadOrder() {
+    try {
+      const order = await API.get(`/api/orders/${orderId}`);
+      orderData = order;
+      document.title = `Commande #${order.id} — SafeTrade`;
+      renderOrder(order);
+    } catch (e) {
+      document.getElementById('order-container').innerHTML = `<div class="empty-state"><p style="color:var(--danger)">${e.message}</p></div>`;
+    }
+  }
+
+  const STEPS = [
+    { key: 'paid', label: 'Payé' },
+    { key: 'shipped', label: 'Expédié' },
+    { key: 'unboxing_pending', label: 'Livré' },
+    { key: 'unboxing_uploaded', label: 'Unboxing' },
+    { key: 'completed', label: 'Terminé' },
+  ];
+
+  function getStepIndex(status) {
+    const map = { paid: 0, shipped: 1, unboxing_pending: 2, unboxing_uploaded: 3, completed: 4, disputed: 3, refunded: 4, cancelled: 0 };
+    return map[status] ?? 0;
+  }
+
+  function renderStepper(status) {
+    const cur = getStepIndex(status);
+    return `
+      <div class="stepper">
+        ${STEPS.map((s, i) => `
+          <div class="step ${i < cur ? 'done' : i === cur ? 'active' : ''}">
+            <div class="step-dot">${i < cur ? '✓' : i + 1}</div>
+            <div class="step-label">${s.label}</div>
+          </div>
+        `).join('')}
+      </div>
+    `;
+  }
+
+  function renderOrder(o) {
+    const isBuyer = o.buyer_id === currentUser.id;
+    const isSeller = o.seller_id === currentUser.id;
+
+    let actionBox = '';
+
+    if (isSeller && o.status === 'paid') {
+      actionBox = `
+        <div class="order-action-box" style="border-color:var(--primary)">
+          <div class="order-action-title">📦 Action requise — Expédier la commande</div>
+          <p style="font-size:0.9rem;margin-bottom:1rem">L'acheteur a payé. Expédiez l'article et confirmez l'envoi avec un numéro de suivi.</p>
+          <button class="btn btn-primary" onclick="document.getElementById('ship-modal').style.display='flex'">Confirmer l'expédition</button>
+        </div>`;
+    } else if (isBuyer && o.status === 'shipped') {
+      actionBox = `
+        <div class="order-action-box" style="border-color:var(--success)">
+          <div class="order-action-title">📬 Votre colis est en route</div>
+          ${o.tracking_number ? `<p style="font-size:0.9rem;margin-bottom:0.75rem">Transporteur: <strong>${o.carrier}</strong> • Suivi: <strong>${o.tracking_number}</strong></p>` : ''}
+          <p style="font-size:0.9rem;margin-bottom:1rem">Une fois votre colis reçu, confirmez la livraison pour démarrer l'unboxing.</p>
+          <button class="btn btn-success" onclick="confirmDelivery()">J'ai reçu mon colis</button>
+        </div>`;
+    } else if (isBuyer && o.status === 'unboxing_pending') {
+      actionBox = `
+        <div class="order-action-box" style="border-color:var(--warning);background:var(--warning-light)">
+          <div class="order-action-title" style="color:var(--warning)">🎬 Unboxing requis — Ne tardez pas !</div>
+          <p style="font-size:0.9rem;margin-bottom:0.5rem">Vous devez filmer l'ouverture de votre colis avec le code de vérification unique.</p>
+          <p style="font-size:0.85rem;color:var(--text-muted);margin-bottom:1rem">Date limite : <strong>${formatDateTime(o.unboxing_deadline)}</strong></p>
+          <a href="/unboxing.html?orderId=${o.id}" class="btn btn-warning">Faire mon unboxing maintenant</a>
+        </div>`;
+    } else if (isBuyer && o.status === 'unboxing_uploaded') {
+      actionBox = `
+        <div class="order-action-box" style="border-color:var(--primary)">
+          <div class="order-action-title">✅ Unboxing soumis</div>
+          <p style="font-size:0.9rem;margin-bottom:1rem">Votre unboxing a été enregistré. Confirmez si tout est correct pour libérer les fonds au vendeur, ou ouvrez un litige.</p>
+          <div style="display:flex;gap:0.75rem;flex-wrap:wrap">
+            <button class="btn btn-success" onclick="confirmTransaction()">Tout est correct — Libérer les fonds</button>
+            <a href="/dispute.html?orderId=${o.id}" class="btn btn-danger">Ouvrir un litige</a>
+          </div>
+        </div>`;
+    } else if (isSeller && o.status === 'unboxing_uploaded') {
+      actionBox = `<div class="alert alert-info">L'acheteur a soumis son unboxing. En attente de sa confirmation ou d'un litige.</div>`;
+    } else if (o.status === 'completed') {
+      actionBox = `<div class="alert alert-success">✅ Transaction terminée. ${isSeller ? 'Les fonds ont été crédités sur votre compte.' : 'Merci pour votre achat !'}</div>`;
+    } else if (o.status === 'disputed') {
+      actionBox = `<div class="alert alert-danger">⚖️ Litige en cours. Notre équipe examine le dossier. <a href="/dispute.html?id=${o.dispute?.id}">Voir le litige</a></div>`;
+    } else if (o.status === 'refunded') {
+      actionBox = `<div class="alert alert-info">↩️ Commande remboursée suite au litige.</div>`;
+    } else if (o.status === 'cancelled') {
+      actionBox = `<div class="alert alert-warning">Commande annulée et remboursée.</div>`;
+    } else if (isBuyer && o.status === 'paid') {
+      actionBox = `<div class="alert alert-info">En attente d'expédition par le vendeur.</div>`;
+    }
+
+    document.getElementById('order-container').innerHTML = `
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:1rem">
+        <div>
+          <h1 style="font-size:1.5rem">Commande #${o.id}</h1>
+          <div style="font-size:0.85rem;color:var(--text-muted)">${formatDateTime(o.created_at)}</div>
+        </div>
+        ${getStatusBadge(o.status)}
+      </div>
+
+      <!-- Stepper -->
+      <div class="card" style="margin-bottom:1.5rem">
+        <div class="card-body">
+          ${renderStepper(o.status)}
+        </div>
+      </div>
+
+      <div class="detail-layout">
+        <div>
+          <!-- Action box -->
+          ${actionBox ? `<div style="margin-bottom:1.5rem">${actionBox}</div>` : ''}
+
+          <!-- Product -->
+          <div class="card" style="margin-bottom:1.5rem">
+            <div class="card-header"><h3>Article commandé</h3></div>
+            <div class="card-body" style="display:flex;gap:1rem;align-items:center">
+              <img src="${o.thumbnail || '/api/placeholder/0'}" style="width:80px;height:80px;object-fit:cover;border-radius:var(--radius-sm)">
+              <div style="flex:1">
+                <div style="font-weight:600">${escHtml(o.title)}</div>
+                <div style="font-size:0.85rem;color:var(--text-muted)">${o.category} • ${getConditionBadge(o.condition)}</div>
+              </div>
+              <div style="text-align:right">
+                <div style="font-size:1.25rem;font-weight:800;color:var(--primary)">${formatPrice(o.amount)}</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tracking -->
+          ${o.tracking_number ? `
+          <div class="card" style="margin-bottom:1.5rem">
+            <div class="card-header"><h3>Expédition</h3></div>
+            <div class="card-body">
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;font-size:0.9rem">
+                <div><div style="font-weight:600;margin-bottom:0.25rem">Transporteur</div><div>${o.carrier}</div></div>
+                <div><div style="font-weight:600;margin-bottom:0.25rem">Numéro de suivi</div><div style="font-family:monospace">${o.tracking_number}</div></div>
+                <div><div style="font-weight:600;margin-bottom:0.25rem">Expédié le</div><div>${formatDateTime(o.shipped_at)}</div></div>
+                ${o.delivered_at ? `<div><div style="font-weight:600;margin-bottom:0.25rem">Reçu le</div><div>${formatDateTime(o.delivered_at)}</div></div>` : ''}
+              </div>
+            </div>
+          </div>` : ''}
+
+          <!-- Unboxing submission -->
+          ${o.unboxing ? renderUnboxingCard(o.unboxing) : ''}
+        </div>
+
+        <!-- Sidebar -->
+        <div>
+          <div class="card">
+            <div class="card-header"><h3>Récapitulatif</h3></div>
+            <div class="card-body">
+              <div class="fee-breakdown">
+                <div class="fee-row"><span>Prix payé</span><span>${formatPrice(o.amount)}</span></div>
+                <div class="fee-row" style="font-size:0.85rem;color:var(--text-muted)"><span>Frais plateforme</span><span>-${formatPrice(o.platform_fee)}</span></div>
+                <div class="fee-row total"><span>Payout vendeur</span><span>${formatPrice(o.seller_payout)}</span></div>
+              </div>
+              <div class="divider"></div>
+              <div style="font-size:0.875rem">
+                <div style="display:flex;justify-content:space-between;padding:0.3rem 0"><span style="color:var(--text-muted)">Acheteur</span><span style="font-weight:600">${escHtml(o.buyer_name)}</span></div>
+                <div style="display:flex;justify-content:space-between;padding:0.3rem 0"><span style="color:var(--text-muted)">Vendeur</span><span style="font-weight:600">${escHtml(o.seller_name)}</span></div>
+              </div>
+              ${isBuyer && o.status === 'paid' ? `
+              <div class="divider"></div>
+              <button class="btn btn-danger btn-full btn-sm" onclick="cancelOrder()">Annuler la commande</button>
+              ` : ''}
+            </div>
+          </div>
+
+          ${o.unboxing_deadline ? `
+          <div class="card" style="margin-top:1rem">
+            <div class="card-body" style="text-align:center">
+              <div style="font-size:0.8rem;color:var(--text-muted);margin-bottom:0.5rem">Délai unboxing</div>
+              <div id="deadline-timer" style="font-size:1.1rem;font-weight:700;color:var(--warning)">${timeUntil(o.unboxing_deadline)}</div>
+            </div>
+          </div>
+          ` : ''}
+        </div>
+      </div>
+    `;
+
+    // Start countdown if applicable
+    if (o.unboxing_deadline && ['unboxing_pending'].includes(o.status)) {
+      setInterval(() => {
+        const el = document.getElementById('deadline-timer');
+        if (el) {
+          const remaining = timeUntil(o.unboxing_deadline);
+          el.textContent = remaining;
+          el.style.color = remaining === 'Expiré' ? 'var(--danger)' : 'var(--warning)';
+        }
+      }, 1000);
+    }
+  }
+
+  function renderUnboxingCard(u) {
+    const photos = typeof u.photo_urls === 'string' ? JSON.parse(u.photo_urls) : (u.photo_urls || []);
+    return `
+      <div class="card">
+        <div class="card-header"><h3>🎬 Unboxing soumis</h3><span style="font-size:0.8rem;color:var(--text-muted)">${formatDateTime(u.submitted_at)}</span></div>
+        <div class="card-body">
+          ${u.video_url ? `<video src="${u.video_url}" controls style="width:100%;border-radius:var(--radius-sm);margin-bottom:1rem;max-height:300px;background:#000"></video>` : ''}
+          ${photos.length ? `
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:0.5rem;margin-bottom:1rem">
+            ${photos.map(p => `<img src="${p}" style="aspect-ratio:1;object-fit:cover;border-radius:var(--radius-sm);cursor:pointer" onclick="window.open('${p}','_blank')">`).join('')}
+          </div>` : ''}
+          <div style="font-size:0.85rem;display:flex;flex-direction:column;gap:0.3rem">
+            <div><span class="badge ${u.code_visible_confirmed ? 'badge-success' : 'badge-danger'}">${u.code_visible_confirmed ? 'Code visible ✓' : 'Code non confirmé'}</span></div>
+            ${u.condition_matches !== null ? `<div><span class="badge ${u.condition_matches ? 'badge-success' : 'badge-danger'}">${u.condition_matches ? 'État conforme ✓' : 'État non conforme ✗'}</span></div>` : ''}
+            ${u.buyer_notes ? `<div style="margin-top:0.5rem;padding:0.75rem;background:var(--bg-secondary);border-radius:var(--radius-sm)">${escHtml(u.buyer_notes)}</div>` : ''}
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  async function confirmDelivery() {
+    if (!confirm('Confirmer la réception du colis ? Vous aurez 48h pour faire l\'unboxing.')) return;
+    try {
+      await API.post(`/api/orders/${orderId}/confirm-delivery`);
+      showToast('Livraison confirmée ! Faites votre unboxing.');
+      await loadOrder();
+    } catch (e) { showToast(e.message, 'error'); }
+  }
+
+  async function confirmTransaction() {
+    if (!confirm('Confirmer que tout est correct et libérer les fonds au vendeur ?')) return;
+    try {
+      await API.post(`/api/unboxing/${orderId}/confirm`);
+      showToast('Transaction terminée !');
+      await loadOrder();
+    } catch (e) { showToast(e.message, 'error'); }
+  }
+
+  async function cancelOrder() {
+    if (!confirm('Annuler cette commande et être remboursé ?')) return;
+    try {
+      await API.post(`/api/orders/${orderId}/cancel`);
+      showToast('Commande annulée et remboursée');
+      await loadOrder();
+    } catch (e) { showToast(e.message, 'error'); }
+  }
+
+  async function confirmShip() {
+    const tracking = document.getElementById('ship-tracking').value.trim();
+    const carrier = document.getElementById('ship-carrier').value;
+    if (!tracking) return showToast('Numéro de suivi requis', 'error');
+    try {
+      await API.post(`/api/orders/${orderId}/ship`, { tracking_number: tracking, carrier });
+      showToast('Expédition confirmée !');
+      document.getElementById('ship-modal').style.display = 'none';
+      await loadOrder();
+    } catch (e) { showToast(e.message, 'error'); }
+  }
+
+  function escHtml(s) { return s ? s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') : ''; }
+</script>
+</body>
+</html>

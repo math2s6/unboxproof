@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Connexion — SafeTrade</title>
+  <link rel="stylesheet" href="/css/main.css">
+</head>
+<body style="background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);min-height:100vh;display:flex;flex-direction:column">
+
+<nav class="navbar">
+  <a href="/" class="nav-logo">SafeTrade</a>
+  <div class="nav-actions" id="nav-auth">
+    <a href="/register.html" class="btn btn-ghost btn-sm">S'inscrire</a>
+  </div>
+  <div id="nav-user" style="display:none" class="nav-user">
+    <span class="nav-balance" id="nav-balance">—</span>
+    <button class="nav-username-btn" id="nav-username-btn"><span id="nav-username">Profil</span> ▾</button>
+    <div class="dropdown-menu" id="user-dropdown" style="display:none">
+      <a href="/dashboard.html" class="dropdown-item">🏠 Dashboard</a>
+      <div class="dropdown-divider"></div>
+      <button class="dropdown-item danger" onclick="logout()">🚪 Déconnexion</button>
+    </div>
+  </div>
+</nav>
+
+<div style="flex:1;display:flex;align-items:center;justify-content:center;padding:2rem">
+  <div style="width:100%;max-width:420px">
+    <div class="card">
+      <div class="card-body" style="padding:2.5rem">
+        <div style="text-align:center;margin-bottom:2rem">
+          <div style="font-size:2.5rem;margin-bottom:0.5rem">🔐</div>
+          <h1 style="font-size:1.75rem;margin-bottom:0.25rem">Connexion</h1>
+          <p>Accédez à votre compte SafeTrade</p>
+        </div>
+
+        <form id="login-form">
+          <div class="form-group">
+            <label class="form-label" for="email">Email <span>*</span></label>
+            <input type="email" id="email" class="form-control" placeholder="vous@exemple.com" required autocomplete="email">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="password">Mot de passe <span>*</span></label>
+            <div style="position:relative">
+              <input type="password" id="password" class="form-control" placeholder="••••••••" required autocomplete="current-password">
+              <button type="button" onclick="togglePw()" style="position:absolute;right:0.75rem;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:1rem;color:var(--text-muted)">👁</button>
+            </div>
+          </div>
+          <button type="submit" class="btn btn-primary btn-full" style="margin-top:0.5rem">Se connecter</button>
+        </form>
+
+        <div class="divider"></div>
+
+        <div style="background:var(--bg-secondary);border-radius:var(--radius-sm);padding:1rem;font-size:0.8rem;color:var(--text-muted)">
+          <div style="font-weight:700;margin-bottom:0.5rem;color:var(--text)">Comptes de démo :</div>
+          <div><strong>Admin :</strong> admin@marketplace.com / admin123</div>
+          <div><strong>Alice :</strong> alice@example.com / user123</div>
+          <div><strong>Bob :</strong> bob@example.com / user123</div>
+        </div>
+
+        <p style="text-align:center;margin-top:1.5rem;font-size:0.9rem">
+          Pas encore de compte ? <a href="/register.html" style="font-weight:600">Créer un compte</a>
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="/js/api.js"></script>
+<script src="/js/auth.js"></script>
+<script>
+  function togglePw() {
+    const pw = document.getElementById('password');
+    pw.type = pw.type === 'password' ? 'text' : 'password';
+  }
+
+  // Redirect if already logged in
+  document.addEventListener('DOMContentLoaded', () => {
+    const user = getCurrentUser();
+    if (user && API.token) window.location.href = '/dashboard.html';
+  });
+
+  // Quick login helpers
+  function quickLogin(email, pwd) {
+    document.getElementById('email').value = email;
+    document.getElementById('password').value = pwd;
+  }
+</script>
+</body>
+</html>

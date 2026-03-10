@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Widget SafeTrade — Exemple d'intégration</title>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f1f5f9;padding:0}
+    .top-bar{background:#0f172a;color:rgba(255,255,255,0.5);text-align:center;padding:10px;font-size:13px}
+    .top-bar strong{color:white}
+    .top-bar a{color:#818cf8;text-decoration:none}
+    .shop-nav{background:white;border-bottom:1px solid #e2e8f0;padding:16px 40px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10}
+    .shop-logo{font-size:22px;font-weight:900;color:#0f172a;display:flex;align-items:center;gap:8px}
+    .shop-nav-links{display:flex;gap:24px;font-size:14px;color:#64748b}
+    .shop-cart{background:#0f172a;color:white;padding:8px 16px;border-radius:8px;font-size:14px;font-weight:600}
+    .container{max-width:1000px;margin:40px auto;padding:0 20px}
+    .breadcrumb{font-size:13px;color:#94a3b8;margin-bottom:24px}
+    .product{background:white;border-radius:20px;padding:40px;display:grid;grid-template-columns:1fr 1fr;gap:48px;box-shadow:0 2px 12px rgba(0,0,0,0.06)}
+    .product-imgs{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+    .product-img{background:linear-gradient(135deg,#1e1b4b,#4c1d95);border-radius:12px;aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-size:72px}
+    .product-img.small{font-size:40px;background:linear-gradient(135deg,#1e293b,#334155)}
+    .product-brand{font-size:13px;color:#4f46e5;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px}
+    .product-title{font-size:28px;font-weight:800;color:#0f172a;margin-bottom:12px;line-height:1.2}
+    .product-rating{display:flex;align-items:center;gap:8px;margin-bottom:16px;font-size:14px;color:#64748b}
+    .stars{color:#f59e0b}
+    .product-price{font-size:36px;font-weight:900;color:#0f172a;margin-bottom:4px}
+    .product-price-sub{font-size:13px;color:#64748b;margin-bottom:24px}
+    .product-desc{font-size:14px;color:#64748b;line-height:1.7;margin-bottom:24px}
+    .size-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:24px}
+    .size-btn{border:2px solid #e2e8f0;border-radius:8px;padding:8px;text-align:center;font-size:14px;font-weight:600;cursor:pointer;transition:all .2s}
+    .size-btn.active{border-color:#4f46e5;color:#4f46e5;background:#ede9fe}
+    .size-btn:hover{border-color:#cbd5e1}
+    .buy-btn{width:100%;background:#0f172a;color:white;border:none;padding:16px;border-radius:12px;font-size:16px;font-weight:700;cursor:pointer;margin-bottom:12px;transition:all .2s}
+    .buy-btn:hover{background:#1e293b}
+    .divider{height:1px;background:#f1f5f9;margin:24px 0}
+    .code-section{background:#1e293b;border-radius:20px;padding:32px;margin-top:40px}
+    .code-section h2{color:white;font-size:20px;font-weight:800;margin-bottom:8px}
+    .code-section p{color:rgba(255,255,255,0.5);font-size:14px;margin-bottom:20px}
+    .code-tabs{display:flex;gap:4px;margin-bottom:16px}
+    .code-tab{padding:6px 14px;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;color:rgba(255,255,255,0.5);transition:all .2s}
+    .code-tab.active{background:#4f46e5;color:white}
+    pre{background:#0f172a;border-radius:12px;padding:20px;overflow-x:auto;font-family:'Fira Code','Courier New',monospace;font-size:13px;line-height:1.7;color:#e2e8f0}
+    .copy-btn{background:rgba(255,255,255,0.1);color:rgba(255,255,255,0.7);border:none;padding:6px 14px;border-radius:6px;font-size:13px;cursor:pointer;transition:all .2s}
+    .copy-btn:hover{background:rgba(255,255,255,0.2);color:white}
+    @media(max-width:700px){.product{grid-template-columns:1fr}.product-imgs{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+
+<div class="top-bar">
+  📌 Ceci est une <strong>démo d'intégration du widget SafeTrade</strong> — <a href="/landing.html">En savoir plus →</a>
+</div>
+
+<nav class="shop-nav">
+  <div class="shop-logo">👟 NikeShop</div>
+  <div class="shop-nav-links">
+    <span>Hommes</span><span>Femmes</span><span>Enfants</span><span>Sale</span>
+  </div>
+  <div class="shop-cart">🛒 Panier (1)</div>
+</nav>
+
+<div class="container">
+  <div class="breadcrumb">Accueil › Chaussures › Running › Air Max 90</div>
+
+  <div class="product">
+    <div>
+      <div class="product-imgs">
+        <div class="product-img">👟</div>
+        <div class="product-img small">👟</div>
+        <div class="product-img small">📦</div>
+        <div class="product-img small">🔍</div>
+      </div>
+    </div>
+    <div>
+      <div class="product-brand">Nike</div>
+      <div class="product-title">Air Max 90 — Blanc/Noir</div>
+      <div class="product-rating">
+        <span class="stars">★★★★★</span>
+        <span>4.8 (2 847 avis)</span>
+      </div>
+      <div class="product-price">120,00 €</div>
+      <div class="product-price-sub">TVA incluse · Livraison gratuite</div>
+      <div class="product-desc">La Air Max 90 reste fidèle à son design des années 90. Amorti Air Max visible, tige en cuir et mesh respirant pour un confort optimal.</div>
+
+      <div style="font-size:14px;font-weight:700;margin-bottom:10px">Taille :</div>
+      <div class="size-grid">
+        <div class="size-btn">39</div><div class="size-btn">40</div>
+        <div class="size-btn active">41</div><div class="size-btn">42</div>
+        <div class="size-btn">43</div>
+      </div>
+
+      <button class="buy-btn">🛒 Ajouter au panier</button>
+
+      <div class="divider"></div>
+
+      <!-- ✅ Widget SafeTrade — intégration en 1 ligne -->
+      <div data-safetrade-order="1"></div>
+
+    </div>
+  </div>
+
+  <!-- Code d'intégration -->
+  <div class="code-section">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+      <h2>📋 Code d'intégration</h2>
+      <button class="copy-btn" onclick="copyCode()">Copier</button>
+    </div>
+    <p>Copiez-collez ce code dans votre page produit, juste après le bouton "Ajouter au panier"</p>
+    <pre id="code-block">&lt;!-- 1. Chargez le widget SafeTrade (1 fois par page) --&gt;
+&lt;script src="https://safetrade.io/widget.js"&gt;&lt;/script&gt;
+
+&lt;!-- 2. Placez le bouton où vous voulez --&gt;
+&lt;div data-safetrade-order="{{ order.id }}"&gt;&lt;/div&gt;
+
+&lt;!-- 3. Initialisez avec votre clé API --&gt;
+&lt;script&gt;
+  SafeTrade.init({ apiKey: 'sk_live_votre_cle_ici' });
+&lt;/script&gt;</pre>
+  </div>
+</div>
+
+<script src="/widget.js"></script>
+<script>
+SafeTrade.init({ apiKey: 'demo' });
+
+function copyCode() {
+  const code = document.getElementById('code-block').textContent;
+  navigator.clipboard.writeText(code).then(() => {
+    const btn = document.querySelector('.copy-btn');
+    btn.textContent = '✅ Copié !';
+    setTimeout(() => btn.textContent = 'Copier', 2000);
+  });
+}
+</script>
+</body>
+</html>

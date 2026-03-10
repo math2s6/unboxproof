@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SafeTrade Business — Créer un compte</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; min-height: 100vh; background: #f8fafc; display: flex; align-items: center; justify-content: center; padding: 2rem 1rem; }
+
+    .card {
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
+      padding: 2.5rem;
+      width: 100%;
+      max-width: 520px;
+    }
+    .logo { font-size: 1.5rem; font-weight: 800; color: #1a1a2e; margin-bottom: 0.25rem; }
+    .logo-badge { display: inline-block; background: #ede9fe; color: #4f46e5; font-size: 0.7rem; font-weight: 600; padding: 0.15rem 0.5rem; border-radius: 999px; margin-bottom: 1.5rem; }
+    h1 { font-size: 1.5rem; font-weight: 700; color: #0f172a; margin-bottom: 0.4rem; }
+    .subtitle { color: #64748b; font-size: 0.9rem; margin-bottom: 2rem; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .form-group { margin-bottom: 1.1rem; }
+    .form-label { display: block; font-size: 0.85rem; font-weight: 500; color: #374151; margin-bottom: 0.35rem; }
+    .form-input, .form-select {
+      width: 100%;
+      padding: 0.7rem 0.9rem;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 9px;
+      font-size: 0.9rem;
+      color: #0f172a;
+      background: white;
+      transition: border-color 0.15s, box-shadow 0.15s;
+      outline: none;
+    }
+    .form-input:focus, .form-select:focus {
+      border-color: #4f46e5;
+      box-shadow: 0 0 0 3px rgba(79,70,229,0.1);
+    }
+    .btn-primary {
+      width: 100%;
+      padding: 0.85rem;
+      background: #4f46e5;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s;
+      margin-top: 0.5rem;
+    }
+    .btn-primary:hover { background: #4338ca; }
+    .btn-primary:disabled { background: #a5b4fc; cursor: not-allowed; }
+    .error-msg { background: #fef2f2; border: 1px solid #fecaca; color: #dc2626; padding: 0.75rem 1rem; border-radius: 8px; font-size: 0.875rem; margin-bottom: 1rem; display: none; }
+    .divider { display: flex; align-items: center; gap: 1rem; margin: 1.5rem 0; color: #94a3b8; font-size: 0.85rem; }
+    .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: #e2e8f0; }
+    .link { color: #4f46e5; text-decoration: none; }
+    .link:hover { text-decoration: underline; }
+
+    /* API Key reveal box */
+    .api-key-box {
+      display: none;
+      background: #0f172a;
+      border-radius: 16px;
+      padding: 2rem;
+      color: white;
+    }
+    .api-key-box h2 { font-size: 1.25rem; margin-bottom: 0.5rem; }
+    .api-key-box p { color: rgba(255,255,255,0.65); font-size: 0.875rem; margin-bottom: 1.5rem; }
+    .api-key-warning {
+      background: rgba(251, 191, 36, 0.15);
+      border: 1px solid rgba(251, 191, 36, 0.4);
+      color: #fbbf24;
+      padding: 0.75rem 1rem;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      margin-bottom: 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .api-key-value {
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 10px;
+      padding: 1rem 1.25rem;
+      font-family: 'Courier New', monospace;
+      font-size: 0.85rem;
+      color: #a5b4fc;
+      word-break: break-all;
+      margin-bottom: 1rem;
+    }
+    .btn-copy {
+      width: 100%;
+      padding: 0.75rem;
+      background: rgba(79, 70, 229, 0.3);
+      border: 1px solid rgba(79, 70, 229, 0.5);
+      color: #a5b4fc;
+      border-radius: 9px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      margin-bottom: 0.75rem;
+      transition: background 0.15s;
+    }
+    .btn-copy:hover { background: rgba(79, 70, 229, 0.5); }
+    .btn-dashboard {
+      width: 100%;
+      padding: 0.85rem;
+      background: #4f46e5;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .btn-dashboard:hover { background: #4338ca; }
+  </style>
+</head>
+<body>
+<div class="card">
+  <!-- Registration form -->
+  <div id="reg-form-section">
+    <div class="logo">SafeTrade</div>
+    <div class="logo-badge">Business</div>
+    <h1>Créer votre compte entreprise</h1>
+    <p class="subtitle">Démarrez gratuitement avec 100 commandes/mois</p>
+
+    <div class="error-msg" id="error-msg"></div>
+
+    <form id="register-form">
+      <div class="form-group">
+        <label class="form-label">Nom de l'entreprise *</label>
+        <input type="text" id="name" class="form-input" placeholder="Nike France" required>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Email professionnel *</label>
+          <input type="email" id="email" class="form-input" placeholder="contact@nike.com" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Mot de passe *</label>
+          <input type="password" id="password" class="form-input" placeholder="Min. 8 caractères" required minlength="8">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Site web</label>
+          <input type="text" id="website" class="form-input" placeholder="nike.com">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Secteur</label>
+          <select id="industry" class="form-select">
+            <option value="">Choisir...</option>
+            <option value="Sportswear">Sportswear</option>
+            <option value="Fashion">Mode & Luxe</option>
+            <option value="Electronics">Électronique</option>
+            <option value="Retail">Grande distribution</option>
+            <option value="Marketplace">Marketplace</option>
+            <option value="Automotive">Automobile</option>
+            <option value="Other">Autre</option>
+          </select>
+        </div>
+      </div>
+      <button type="submit" class="btn-primary" id="submit-btn">Créer mon compte et obtenir mon API key</button>
+    </form>
+
+    <div class="divider">Déjà un compte ?</div>
+    <div style="text-align:center">
+      <a href="/company/login.html" class="link">Se connecter →</a>
+    </div>
+  </div>
+
+  <!-- API Key reveal (shown after registration) -->
+  <div class="api-key-box" id="api-key-section">
+    <h2>Compte créé avec succès !</h2>
+    <p>Voici votre clé API. Copiez-la maintenant, elle ne sera plus jamais affichée.</p>
+    <div class="api-key-warning">
+      ⚠️ Conservez cette clé en lieu sûr. Elle donne accès à votre compte.
+    </div>
+    <div class="api-key-value" id="api-key-display"></div>
+    <button class="btn-copy" onclick="copyKey()">Copier la clé API</button>
+    <button class="btn-dashboard" onclick="window.location.href='/company/'">Accéder au tableau de bord →</button>
+  </div>
+</div>
+
+<script>
+  let generatedKey = '';
+
+  document.getElementById('register-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn = document.getElementById('submit-btn');
+    const errEl = document.getElementById('error-msg');
+    btn.disabled = true;
+    btn.textContent = 'Création en cours...';
+    errEl.style.display = 'none';
+
+    try {
+      const res = await fetch('/api/b2b/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: document.getElementById('name').value,
+          email: document.getElementById('email').value,
+          password: document.getElementById('password').value,
+          website: document.getElementById('website').value,
+          industry: document.getElementById('industry').value
+        })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Erreur lors de la création');
+
+      // Store token
+      localStorage.setItem('company_token', data.token);
+      localStorage.setItem('company_data', JSON.stringify(data.company));
+
+      // Show API key
+      generatedKey = data.api_key;
+      document.getElementById('api-key-display').textContent = data.api_key;
+      document.getElementById('reg-form-section').style.display = 'none';
+      document.getElementById('api-key-section').style.display = 'block';
+    } catch (err) {
+      errEl.textContent = err.message;
+      errEl.style.display = 'block';
+      btn.disabled = false;
+      btn.textContent = 'Créer mon compte et obtenir mon API key';
+    }
+  });
+
+  function copyKey() {
+    navigator.clipboard.writeText(generatedKey).then(() => {
+      document.querySelector('.btn-copy').textContent = 'Copié !';
+      setTimeout(() => { document.querySelector('.btn-copy').textContent = 'Copier la clé API'; }, 2000);
+    });
+  }
+</script>
+</body>
+</html>

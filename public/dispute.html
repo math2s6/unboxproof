@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Litige — SafeTrade</title>
+  <link rel="stylesheet" href="/css/main.css">
+</head>
+<body>
+
+<nav class="navbar">
+  <a href="/" class="nav-logo">SafeTrade</a>
+  <div class="nav-actions">
+    <div id="nav-auth" style="display:flex;gap:0.5rem">
+      <a href="/login.html" class="btn btn-ghost btn-sm">Connexion</a>
+    </div>
+    <div id="nav-user" style="display:none" class="nav-user">
+      <span class="nav-balance" id="nav-balance">—</span>
+      <div class="dropdown">
+        <button class="nav-username-btn" id="nav-username-btn"><span id="nav-username">Profil</span> ▾</button>
+        <div class="dropdown-menu" id="user-dropdown" style="display:none">
+          <a href="/dashboard.html" class="dropdown-item">🏠 Dashboard</a>
+          <div class="dropdown-divider"></div>
+          <button class="dropdown-item danger" onclick="logout()">🚪 Déconnexion</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<div class="container-md" style="padding-top:2rem;padding-bottom:3rem">
+  <a href="/dashboard.html" style="color:var(--text-muted);font-size:0.9rem">← Mon tableau de bord</a>
+  <div id="dispute-container" style="margin-top:1.5rem">
+    <div class="loading-overlay"><div class="spinner"></div></div>
+  </div>
+</div>
+
+<script src="/js/api.js"></script>
+<script src="/js/auth.js"></script>
+<script>
+  const params = new URLSearchParams(location.search);
+  const orderId = params.get('orderId');
+  const disputeId = params.get('id');
+  let currentUser = null;
+  let disputeData = null;
+
+  document.addEventListener('DOMContentLoaded', async () => {
+    currentUser = getCurrentUser();
+    if (!currentUser || !API.token) { window.location.href = '/login.html'; return; }
+    renderNav(currentUser);
+
+    if (disputeId) {
+      await loadDisputeById(disputeId);
+    } else if (orderId) {
+      // Check if dispute exists for this order
+      await loadOrderForDispute(orderId);
+    } else {
+      document.getElementById('dispute-container').innerHTML = '<div class="empty-state"><p>Paramètres manquants</p></div>';
+    }
+  });
+
+  async function loadOrderForDispute(oid) {
+    try {
+      const order = await API.get(`/api/orders/${oid}`);
+      if (order.dispute) {
+        await loadDisputeById(order.dispute.id);
+      } else {
+        renderDisputeForm(order);
+      }
+    } catch (e) {
+      document.getElementById('dispute-container').innerHTML = `<div class="empty-state"><p style="color:var(--danger)">${e.message}</p></div>`;
+    }
+  }
+
+  async function loadDisputeById(id) {
+    try {
+      const dispute = await API.get(`/api/disputes/${id}`);
+      disputeData = dispute;
+      renderDisputeThread(dispute);
+    } catch (e) {
+      document.getElementById('dispute-container').innerHTML = `<div class="empty-state"><p style="color:var(--danger)">${e.message}</p></div>`;
+    }
+  }
+
+  function renderDisputeForm(order) {
+    document.title = 'Ouvrir un litige — SafeTrade';
+    document.getElementById('dispute-container').innerHTML = `
+      <div class="detail-layout">
+        <div>
+          <h1 style="font-size:1.5rem;margin-bottom:0.5rem">⚖️ Ouvrir un litige</h1>
+          <p style="margin-bottom:2rem">Décrivez le problème. Notre équipe examinera votre dossier et votre unboxing sous 24h.</p>
+
+          <div class="alert alert-warning" style="margin-bottom:1.5rem">
+            En ouvrant un litige, les fonds sont bloqués jusqu'à résolution par notre équipe d'arbitrage.
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div style="display:flex;gap:1rem;align-items:center">
+                <img src="${order.thumbnail || '/api/placeholder/0'}" style="width:60px;height:60px;object-fit:cover;border-radius:var(--radius-sm)">
+                <div>
+                  <div style="font-weight:600">${escHtml(order.title)}</div>
+                  <div style="font-size:0.85rem;color:var(--text-muted)">Commande #${order.id} • ${formatPrice(order.amount)}</div>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+              <form id="dispute-form">
+                <div class="form-group">
+                  <label class="form-label">Motif du litige <span>*</span></label>
+                  <select id="dispute-reason" class="form-control" required>
+                    <option value="">Sélectionner un motif...</option>
+                    <option value="not_as_described">Article non conforme à l'annonce</option>
+                    <option value="missing_items">Accessoires manquants</option>
+                    <option value="damaged">Article endommagé à la réception</option>
+                    <option value="counterfeit">Article contrefait / non authentique</option>
+                    <option value="wrong_item">Mauvais article reçu</option>
+                    <option value="other">Autre</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Description détaillée <span>*</span></label>
+                  <textarea id="dispute-description" class="form-control" rows="6" placeholder="Décrivez précisément le problème. Plus vous êtes précis, plus vite le litige sera résolu..." required minlength="50"></textarea>
+                  <div class="form-hint">Minimum 50 caractères</div>
+                </div>
+                <div class="alert alert-info">
+                  Notre équipe va examiner votre unboxing vidéo/photos pour vérifier le code et l'état de l'article.
+                </div>
+                <button type="submit" class="btn btn-danger btn-full btn-lg">⚖️ Ouvrir le litige</button>
+              </form>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="card" style="position:sticky;top:80px">
+            <div class="card-header"><h3>🛡️ Processus de litige</h3></div>
+            <div class="card-body" style="font-size:0.85rem">
+              <div style="display:flex;flex-direction:column;gap:1rem">
+                <div style="display:flex;gap:0.75rem">
+                  <span style="font-size:1.25rem">1️⃣</span>
+                  <div><strong>Vous ouvrez le litige</strong><br><span style="color:var(--text-muted)">Décrivez le problème et soumettez.</span></div>
+                </div>
+                <div style="display:flex;gap:0.75rem">
+                  <span style="font-size:1.25rem">2️⃣</span>
+                  <div><strong>Examen de l'unboxing</strong><br><span style="color:var(--text-muted)">Notre équipe vérifie votre vidéo et le code.</span></div>
+                </div>
+                <div style="display:flex;gap:0.75rem">
+                  <span style="font-size:1.25rem">3️⃣</span>
+                  <div><strong>Décision sous 24h</strong><br><span style="color:var(--text-muted)">Remboursement ou libération des fonds.</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+
+    document.getElementById('dispute-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const reason = document.getElementById('dispute-reason').value;
+      const description = document.getElementById('dispute-description').value;
+      if (description.length < 50) { showToast('Description trop courte (min 50 caractères)', 'error'); return; }
+      const btn = e.target.querySelector('button[type=submit]');
+      btn.disabled = true; btn.textContent = 'Ouverture...';
+      try {
+        const data = await API.post('/api/disputes', { orderId: parseInt(orderId), reason, description });
+        showToast('Litige ouvert !');
+        await loadDisputeById(data.disputeId);
+      } catch (err) {
+        showToast(err.message, 'error');
+        btn.disabled = false; btn.textContent = 'Ouvrir le litige';
+      }
+    });
+  }
+
+  function renderDisputeThread(d) {
+    document.title = `Litige #${d.id} — SafeTrade`;
+    const isBuyer = d.buyer_id === currentUser.id;
+    const isSeller = d.seller_id === currentUser.id;
+    const photos = d.unboxing?.photo_urls || [];
+    const statusMap = {
+      open: { label: 'En cours', class: 'badge-danger' },
+      resolved_buyer: { label: 'Résolu — Acheteur', class: 'badge-success' },
+      resolved_seller: { label: 'Résolu — Vendeur', class: 'badge-warning' },
+    };
+    const statusBadge = statusMap[d.status] || { label: d.status, class: 'badge-secondary' };
+
+    document.getElementById('dispute-container').innerHTML = `
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:1rem">
+        <div>
+          <h1 style="font-size:1.5rem">⚖️ Litige #${d.id}</h1>
+          <div style="font-size:0.85rem;color:var(--text-muted)">Commande concernée: ${escHtml(d.listing_title)} • ${formatPrice(d.amount)}</div>
+        </div>
+        <span class="badge ${statusBadge.class}" style="font-size:0.9rem;padding:0.4rem 0.875rem">${statusBadge.label}</span>
+      </div>
+
+      <div class="detail-layout">
+        <div>
+          <!-- Summary -->
+          <div class="card" style="margin-bottom:1.5rem">
+            <div class="card-header"><h3>Résumé</h3></div>
+            <div class="card-body" style="font-size:0.9rem">
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+                <div><span style="color:var(--text-muted)">Motif :</span> <strong>${escHtml(d.reason)}</strong></div>
+                <div><span style="color:var(--text-muted)">Ouvert le :</span> <strong>${formatDateTime(d.created_at)}</strong></div>
+                <div><span style="color:var(--text-muted)">Acheteur :</span> <strong>${escHtml(d.buyer_name)}</strong></div>
+                <div><span style="color:var(--text-muted)">Vendeur :</span> <strong>${escHtml(d.seller_name)}</strong></div>
+              </div>
+              <div style="margin-top:1rem;padding:0.875rem;background:var(--bg-secondary);border-radius:var(--radius-sm)">
+                <div style="font-weight:600;margin-bottom:0.3rem">Description :</div>
+                ${escHtml(d.description)}
+              </div>
+              ${d.admin_notes ? `<div class="alert alert-warning" style="margin-top:1rem"><strong>Note admin :</strong> ${escHtml(d.admin_notes)}</div>` : ''}
+            </div>
+          </div>
+
+          <!-- Unboxing evidence -->
+          ${d.unboxing ? `
+          <div class="card" style="margin-bottom:1.5rem">
+            <div class="card-header"><h3>🎬 Preuve d'unboxing</h3></div>
+            <div class="card-body">
+              ${d.unboxing.video_url ? `<video src="${d.unboxing.video_url}" controls style="width:100%;border-radius:var(--radius-sm);margin-bottom:1rem;max-height:280px;background:#000"></video>` : ''}
+              ${photos.length ? `
+              <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:0.5rem">
+                ${photos.map(p => `<img src="${p}" style="aspect-ratio:1;object-fit:cover;border-radius:var(--radius-sm);cursor:pointer" onclick="window.open('${p}','_blank')">`).join('')}
+              </div>` : ''}
+              <div style="display:flex;gap:0.5rem;margin-top:0.75rem;flex-wrap:wrap">
+                <span class="badge ${d.unboxing.code_visible_confirmed ? 'badge-success' : 'badge-danger'}">${d.unboxing.code_visible_confirmed ? 'Code visible ✓' : 'Code non confirmé'}</span>
+                ${d.unboxing.condition_matches !== null ? `<span class="badge ${d.unboxing.condition_matches ? 'badge-success' : 'badge-danger'}">${d.unboxing.condition_matches ? 'État conforme ✓' : 'État non conforme ✗'}</span>` : ''}
+              </div>
+            </div>
+          </div>` : ''}
+
+          <!-- Messages -->
+          <div class="card">
+            <div class="card-header"><h3>💬 Thread de discussion</h3></div>
+            <div class="card-body">
+              <div class="dispute-thread">
+                ${d.messages.length === 0 ? '<p style="color:var(--text-muted);font-size:0.9rem">Aucun message pour l\'instant.</p>' :
+                  d.messages.map(m => {
+                    const role = m.sender_id === d.buyer_id ? 'buyer' : m.sender_id === d.seller_id ? 'seller' : 'admin';
+                    return `
+                      <div class="dispute-msg ${role}">
+                        <div class="dispute-msg-author">${escHtml(m.username)} ${role === 'admin' ? '(Admin)' : ''}</div>
+                        <div>${escHtml(m.message)}</div>
+                        <div class="dispute-msg-time">${formatDateTime(m.created_at)}</div>
+                      </div>`;
+                  }).join('')}
+              </div>
+              ${d.status === 'open' ? `
+              <div style="margin-top:1rem;display:flex;gap:0.75rem">
+                <input type="text" id="msg-input" class="form-control" placeholder="Votre message..." onkeydown="if(event.key==='Enter')sendDisputeMsg()">
+                <button class="btn btn-primary" onclick="sendDisputeMsg()">Envoyer</button>
+              </div>` : ''}
+            </div>
+          </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div>
+          <div class="card" style="position:sticky;top:80px">
+            <div class="card-header"><h3>Montant en jeu</h3></div>
+            <div class="card-body" style="text-align:center">
+              <div style="font-size:2rem;font-weight:800;color:var(--primary);margin-bottom:0.5rem">${formatPrice(d.amount)}</div>
+              <div style="font-size:0.85rem;color:var(--text-muted)">Bloqué en séquestre</div>
+              ${d.status === 'open' ? `
+              <div class="divider"></div>
+              <div style="font-size:0.8rem;color:var(--text-muted)">En attente de la décision admin</div>
+              ` : `
+              <div class="divider"></div>
+              <div class="alert ${d.status === 'resolved_buyer' ? 'alert-success' : 'alert-warning'}">
+                ${d.status === 'resolved_buyer' ? 'Remboursé à l\'acheteur' : 'Libéré au vendeur'}
+              </div>`}
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  async function sendDisputeMsg() {
+    const input = document.getElementById('msg-input');
+    if (!input) return;
+    const msg = input.value.trim();
+    if (!msg) return;
+    try {
+      await API.post(`/api/disputes/${disputeData.id}/messages`, { message: msg });
+      input.value = '';
+      await loadDisputeById(disputeData.id);
+    } catch (e) { showToast(e.message, 'error'); }
+  }
+
+  function escHtml(s) { return s ? s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') : ''; }
+</script>
+</body>
+</html>

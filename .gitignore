@@ -1,0 +1,7 @@
+node_modules/
+.env
+marketplace.db
+uploads/
+.DS_Store
+*.log
+.agents/
