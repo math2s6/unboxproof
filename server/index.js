@@ -48,14 +48,19 @@ app.use('/api/contact', require('./routes/contact'));
 app.use('/api/waitlist', require('./routes/waitlist'));
 app.use('/api/company/export', require('./routes/b2b-export'));
 
-// SPA fallback — serve actual HTML files if they exist, otherwise index.html
+// Redirect root to B2B landing page
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, '../public', 'landing.html'));
+});
+
+// SPA fallback — serve actual HTML files if they exist, otherwise landing.html
 app.get('*', (req, res) => {
   const filePath = path.join(__dirname, '../public', req.path);
   const fs = require('fs');
   if (fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
     return res.sendFile(filePath);
   }
-  res.sendFile(path.join(__dirname, '../public', 'index.html'));
+  res.sendFile(path.join(__dirname, '../public', 'landing.html'));
 });
 
 app.use(errorHandler);

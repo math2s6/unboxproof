@@ -8,446 +8,374 @@
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
-      --sidebar-w: 248px;
-      --primary: #4f46e5;
-      --primary-dark: #3730a3;
-      --bg: #f1f5f9;
+      --sidebar-w: 240px;
+      --primary: #6366f1;
+      --primary-dark: #4f46e5;
+      --bg: #f8fafc;
       --card: #ffffff;
       --border: #e2e8f0;
       --text: #0f172a;
       --muted: #64748b;
-      --success: #059669;
-      --warning: #d97706;
-      --danger: #dc2626;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --info: #3b82f6;
     }
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg); min-height: 100vh; display: flex; color: var(--text); }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif; background: var(--bg); min-height: 100vh; display: flex; color: var(--text); font-size: 14px; }
 
-    /* SIDEBAR */
-    .sidebar { width: var(--sidebar-w); min-height: 100vh; background: #0f0f23; display: flex; flex-direction: column; flex-shrink: 0; position: fixed; top: 0; left: 0; bottom: 0; border-right: 1px solid rgba(255,255,255,0.06); }
-    .sidebar-header { padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.06); }
-    .sidebar-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
-    .sidebar-logo svg { width: 32px; height: 32px; flex-shrink: 0; }
-    .sidebar-logo-text { font-size: 18px; font-weight: 800; color: white; letter-spacing: -0.5px; }
-    .sidebar-badge { display: inline-block; background: rgba(79,70,229,0.25); color: #a5b4fc; font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 2px 8px; border-radius: 999px; margin-top: 6px; }
-    .sidebar-company { padding: 14px 20px; border-bottom: 1px solid rgba(255,255,255,0.06); display: flex; align-items: center; gap: 10px; }
-    .company-avatar { width: 34px; height: 34px; background: linear-gradient(135deg,#4f46e5,#7c3aed); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 700; color: white; font-size: 14px; flex-shrink: 0; }
-    .company-name { font-size: 13px; font-weight: 600; color: white; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 160px; }
-    .company-plan { font-size: 11px; color: rgba(255,255,255,0.4); margin-top: 1px; }
-    .sidebar-nav { flex: 1; padding: 12px 10px; overflow-y: auto; }
-    .nav-section { font-size: 10px; font-weight: 600; color: rgba(255,255,255,0.25); text-transform: uppercase; letter-spacing: 0.08em; padding: 8px 10px 4px; margin-top: 8px; }
-    .nav-item { display: flex; align-items: center; gap: 10px; padding: 9px 10px; border-radius: 8px; cursor: pointer; color: rgba(255,255,255,0.55); font-size: 14px; font-weight: 500; transition: all 0.15s; position: relative; user-select: none; }
-    .nav-item:hover { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.85); }
-    .nav-item.active { background: rgba(79,70,229,0.2); color: #a5b4fc; }
-    .nav-item.active .nav-dot { background: #818cf8; }
-    .nav-dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,0.2); flex-shrink: 0; }
-    .nav-badge { margin-left: auto; background: #ef4444; color: white; font-size: 10px; font-weight: 700; min-width: 18px; height: 18px; border-radius: 9px; display: flex; align-items: center; justify-content: center; padding: 0 4px; }
-    .sidebar-footer { padding: 16px; border-top: 1px solid rgba(255,255,255,0.06); }
-    .btn-logout { width: 100%; padding: 9px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; color: rgba(255,255,255,0.45); font-size: 13px; cursor: pointer; transition: all 0.15s; }
-    .btn-logout:hover { background: rgba(239,68,68,0.15); border-color: rgba(239,68,68,0.3); color: #fca5a5; }
+    /* ── SIDEBAR ── */
+    .sidebar { width: var(--sidebar-w); min-height: 100vh; background: #0f172a; display: flex; flex-direction: column; flex-shrink: 0; position: fixed; top: 0; left: 0; bottom: 0; }
+    .sidebar-header { padding: 18px 16px; border-bottom: 1px solid rgba(255,255,255,0.06); }
+    .sidebar-logo { display: flex; align-items: center; gap: 9px; text-decoration: none; }
+    .logo-icon { width: 30px; height: 30px; background: linear-gradient(135deg, #6366f1, #8b5cf6); border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .logo-icon svg { width: 16px; height: 16px; fill: white; }
+    .logo-text { font-size: 16px; font-weight: 800; color: white; letter-spacing: -0.3px; }
+    .logo-badge { font-size: 9px; font-weight: 700; color: #818cf8; background: rgba(99,102,241,0.15); border: 1px solid rgba(99,102,241,0.2); padding: 1px 6px; border-radius: 4px; letter-spacing: 0.05em; text-transform: uppercase; margin-left: 2px; }
+    .sidebar-company { padding: 12px 16px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+    .company-row { display: flex; align-items: center; gap: 10px; }
+    .company-avatar { width: 32px; height: 32px; background: linear-gradient(135deg, #6366f1, #8b5cf6); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 700; color: white; font-size: 13px; flex-shrink: 0; }
+    .company-name { font-size: 13px; font-weight: 600; color: #f1f5f9; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .plan-badge { display: inline-flex; align-items: center; gap: 3px; font-size: 10px; font-weight: 600; color: #fbbf24; background: rgba(251,191,36,0.1); border: 1px solid rgba(251,191,36,0.2); padding: 1px 6px; border-radius: 4px; margin-top: 2px; }
+    .sidebar-nav { flex: 1; padding: 10px 8px; overflow-y: auto; }
+    .nav-group { margin-bottom: 4px; }
+    .nav-label { font-size: 10px; font-weight: 600; color: rgba(255,255,255,0.2); text-transform: uppercase; letter-spacing: 0.08em; padding: 8px 8px 4px; }
+    .nav-item { display: flex; align-items: center; gap: 9px; padding: 8px 10px; border-radius: 7px; cursor: pointer; color: rgba(255,255,255,0.45); font-size: 13px; font-weight: 500; transition: all 0.15s; position: relative; }
+    .nav-item:hover { background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.8); }
+    .nav-item.active { background: rgba(99,102,241,0.15); color: #a5b4fc; }
+    .nav-item svg { width: 15px; height: 15px; flex-shrink: 0; opacity: 0.7; }
+    .nav-item.active svg { opacity: 1; }
+    .nav-count { margin-left: auto; background: #ef4444; color: white; font-size: 10px; font-weight: 700; min-width: 17px; height: 17px; border-radius: 8px; display: flex; align-items: center; justify-content: center; padding: 0 4px; }
+    .sidebar-footer { padding: 12px 8px; border-top: 1px solid rgba(255,255,255,0.05); }
+    .btn-logout { width: 100%; padding: 8px 10px; background: transparent; border: 1px solid rgba(255,255,255,0.08); border-radius: 7px; color: rgba(255,255,255,0.35); font-size: 12px; cursor: pointer; transition: all 0.15s; display: flex; align-items: center; gap: 8px; }
+    .btn-logout:hover { background: rgba(239,68,68,0.1); border-color: rgba(239,68,68,0.25); color: #fca5a5; }
 
-    /* MAIN */
-    .main { margin-left: var(--sidebar-w); flex: 1; min-height: 100vh; display: flex; flex-direction: column; }
-    .topbar { background: white; border-bottom: 1px solid var(--border); padding: 16px 32px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 10; }
-    .topbar-left h1 { font-size: 20px; font-weight: 700; color: var(--text); }
-    .topbar-left p { font-size: 13px; color: var(--muted); margin-top: 2px; }
-    .topbar-right { display: flex; align-items: center; gap: 12px; }
-    .plan-badge { padding: 5px 12px; border-radius: 999px; font-size: 12px; font-weight: 600; }
-    .plan-free { background: #f1f5f9; color: #64748b; }
-    .plan-pro { background: linear-gradient(135deg,#4f46e5,#7c3aed); color: white; }
-    .plan-enterprise { background: linear-gradient(135deg,#0f172a,#1e293b); color: #a5b4fc; }
-    .topbar-avatar { width: 34px; height: 34px; background: linear-gradient(135deg,#4f46e5,#7c3aed); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 700; color: white; font-size: 13px; }
-    .content { padding: 28px 32px; flex: 1; }
+    /* ── MAIN ── */
+    .main { margin-left: var(--sidebar-w); flex: 1; min-height: 100vh; display: flex; flex-direction: column; max-width: calc(100vw - var(--sidebar-w)); }
+    .topbar { background: white; border-bottom: 1px solid var(--border); padding: 14px 28px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 10; }
+    .topbar-title { font-size: 16px; font-weight: 700; color: var(--text); }
+    .topbar-sub { font-size: 12px; color: var(--muted); margin-top: 1px; }
+    .topbar-actions { display: flex; align-items: center; gap: 10px; }
+    .btn { display: inline-flex; align-items: center; gap: 6px; padding: 7px 14px; border-radius: 7px; font-size: 13px; font-weight: 600; cursor: pointer; border: none; transition: all 0.15s; text-decoration: none; }
+    .btn-primary { background: var(--primary); color: white; }
+    .btn-primary:hover { background: var(--primary-dark); }
+    .btn-ghost { background: transparent; color: var(--muted); border: 1px solid var(--border); }
+    .btn-ghost:hover { background: var(--bg); color: var(--text); }
+    .btn-sm { padding: 5px 10px; font-size: 12px; }
+    .btn-danger { background: var(--danger); color: white; }
+    .btn-danger:hover { background: #dc2626; }
+    .btn-success { background: var(--success); color: white; }
+    .btn-success:hover { background: #059669; }
+    .content { padding: 24px 28px; flex: 1; }
 
-    /* STAT CARDS */
+    /* ── STAT CARDS ── */
     .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
-    .stat-card { background: white; border-radius: 14px; padding: 20px; border: 1px solid var(--border); }
-    .stat-card-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
-    .stat-card-label { font-size: 13px; color: var(--muted); font-weight: 500; }
-    .stat-card-icon { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 16px; }
-    .stat-card-val { font-size: 28px; font-weight: 800; color: var(--text); letter-spacing: -0.5px; }
-    .stat-card-trend { font-size: 12px; margin-top: 4px; display: flex; align-items: center; gap: 4px; }
-    .trend-up { color: var(--success); }
-    .trend-down { color: var(--danger); }
-    .trend-neutral { color: var(--muted); }
+    .stat-card { background: white; border: 1px solid var(--border); border-radius: 12px; padding: 18px 20px; position: relative; overflow: hidden; }
+    .stat-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; border-radius: 12px 12px 0 0; }
+    .stat-card.blue::before { background: linear-gradient(90deg, #6366f1, #8b5cf6); }
+    .stat-card.green::before { background: linear-gradient(90deg, #10b981, #059669); }
+    .stat-card.orange::before { background: linear-gradient(90deg, #f59e0b, #ef4444); }
+    .stat-card.purple::before { background: linear-gradient(90deg, #8b5cf6, #6366f1); }
+    .stat-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+    .stat-label { font-size: 12px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
+    .stat-icon { width: 34px; height: 34px; border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+    .stat-icon.blue { background: rgba(99,102,241,0.1); }
+    .stat-icon.green { background: rgba(16,185,129,0.1); }
+    .stat-icon.orange { background: rgba(245,158,11,0.1); }
+    .stat-icon.purple { background: rgba(139,92,246,0.1); }
+    .stat-value { font-size: 28px; font-weight: 800; color: var(--text); letter-spacing: -0.5px; line-height: 1; }
+    .stat-sub { font-size: 12px; color: var(--muted); margin-top: 5px; }
+    .stat-trend { display: inline-flex; align-items: center; gap: 3px; font-size: 11px; font-weight: 600; padding: 2px 6px; border-radius: 4px; margin-top: 5px; }
+    .stat-trend.up { background: rgba(16,185,129,0.1); color: #059669; }
+    .stat-trend.alert { background: rgba(245,158,11,0.1); color: #d97706; }
 
-    /* CARDS */
-    .card { background: white; border-radius: 14px; border: 1px solid var(--border); margin-bottom: 20px; }
-    .card-header { padding: 18px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
-    .card-title { font-size: 15px; font-weight: 700; color: var(--text); }
-    .card-action { background: none; border: none; color: var(--primary); font-size: 13px; font-weight: 600; cursor: pointer; padding: 4px 0; }
-    .card-action:hover { text-decoration: underline; }
-    .card-body { padding: 20px; }
+    /* ── CHARTS ── */
+    .charts-row { display: grid; grid-template-columns: 1fr 320px; gap: 16px; margin-bottom: 24px; }
+    .chart-card { background: white; border: 1px solid var(--border); border-radius: 12px; padding: 20px; }
+    .chart-title { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+    .chart-sub { font-size: 12px; color: var(--muted); margin-bottom: 16px; }
+    .chart-wrap { position: relative; height: 200px; }
 
-    /* CHARTS ROW */
-    .charts-row { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; margin-bottom: 20px; }
-    .chart-wrap { position: relative; height: 240px; }
-
-    /* TABLE */
-    .table-wrap { overflow-x: auto; }
-    table { width: 100%; border-collapse: collapse; font-size: 13px; }
-    th { padding: 10px 16px; text-align: left; font-size: 11px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 1px solid var(--border); white-space: nowrap; }
-    td { padding: 12px 16px; border-bottom: 1px solid #f8fafc; color: var(--text); vertical-align: middle; }
+    /* ── TABLES ── */
+    .section-card { background: white; border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin-bottom: 24px; }
+    .section-header { padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+    .section-title { font-size: 14px; font-weight: 700; color: var(--text); }
+    .section-count { font-size: 12px; color: var(--muted); background: var(--bg); padding: 2px 8px; border-radius: 999px; border: 1px solid var(--border); }
+    table { width: 100%; border-collapse: collapse; }
+    th { font-size: 11px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; padding: 10px 16px; text-align: left; background: #f8fafc; border-bottom: 1px solid var(--border); white-space: nowrap; }
+    td { padding: 13px 16px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
     tr:last-child td { border-bottom: none; }
-    tr:hover td { background: #f8fafc; }
-    .td-mono { font-family: 'Courier New', monospace; font-size: 12px; background: #f1f5f9; padding: 2px 6px; border-radius: 4px; }
-    .td-name { font-weight: 500; }
-    .td-email { font-size: 12px; color: var(--muted); margin-top: 2px; }
+    tr:hover td { background: #fafafa; }
+    .td-product { font-weight: 600; color: var(--text); font-size: 13px; }
+    .td-id { font-size: 11px; color: var(--muted); font-family: monospace; margin-top: 2px; }
+    .td-customer { font-size: 13px; color: var(--text); }
+    .td-email { font-size: 11px; color: var(--muted); }
+    .td-amount { font-size: 14px; font-weight: 700; color: var(--text); }
+    .td-date { font-size: 12px; color: var(--muted); white-space: nowrap; }
+    .empty-state { text-align: center; padding: 48px 20px; }
+    .empty-icon { font-size: 40px; margin-bottom: 12px; }
+    .empty-title { font-size: 15px; font-weight: 600; color: var(--text); margin-bottom: 6px; }
+    .empty-sub { font-size: 13px; color: var(--muted); }
 
-    /* BADGES */
-    .badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 9px; border-radius: 999px; font-size: 11px; font-weight: 600; white-space: nowrap; }
-    .badge-pending { background: #fef3c7; color: #92400e; }
-    .badge-shipped { background: #dbeafe; color: #1e40af; }
-    .badge-unboxing_pending { background: #ede9fe; color: #5b21b6; }
-    .badge-unboxing_submitted { background: #fef9c3; color: #713f12; }
-    .badge-completed { background: #dcfce7; color: #166534; }
-    .badge-refunded { background: #fee2e2; color: #991b1b; }
-    .badge-disputed { background: #fee2e2; color: #991b1b; }
+    /* ── STATUS BADGES ── */
+    .badge { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 5px; white-space: nowrap; }
+    .badge::before { content: ''; width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; }
+    .badge-pending { background: #fef3c7; color: #92400e; } .badge-pending::before { background: #f59e0b; }
+    .badge-shipped { background: #dbeafe; color: #1e40af; } .badge-shipped::before { background: #3b82f6; }
+    .badge-unboxing_pending { background: #ede9fe; color: #5b21b6; } .badge-unboxing_pending::before { background: #8b5cf6; }
+    .badge-unboxing_submitted { background: #fef9c3; color: #713f12; } .badge-unboxing_submitted::before { background: #eab308; }
+    .badge-completed { background: #d1fae5; color: #065f46; } .badge-completed::before { background: #10b981; }
+    .badge-refunded { background: #fee2e2; color: #991b1b; } .badge-refunded::before { background: #ef4444; }
+    .badge-disputed { background: #fce7f3; color: #9d174d; } .badge-disputed::before { background: #ec4899; }
 
-    /* CONFIDENCE BAR */
-    .conf-wrap { display: flex; align-items: center; gap: 8px; }
-    .conf-bar { height: 6px; width: 64px; border-radius: 999px; background: #e2e8f0; overflow: hidden; }
-    .conf-fill { height: 100%; border-radius: 999px; }
-    .conf-pct { font-size: 12px; font-weight: 600; white-space: nowrap; }
+    /* ── AI CONFIDENCE ── */
+    .ai-bar-wrap { width: 80px; }
+    .ai-bar-bg { height: 5px; background: #e2e8f0; border-radius: 99px; overflow: hidden; }
+    .ai-bar-fill { height: 100%; border-radius: 99px; transition: width 0.4s; }
+    .ai-score { font-size: 11px; font-weight: 700; margin-top: 3px; }
 
-    /* FILTERS */
-    .filter-bar { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 16px; align-items: center; }
-    .filter-btn { padding: 6px 14px; border: 1.5px solid var(--border); border-radius: 999px; font-size: 12px; font-weight: 500; color: var(--muted); background: white; cursor: pointer; transition: all 0.15s; white-space: nowrap; }
-    .filter-btn:hover { border-color: var(--primary); color: var(--primary); }
-    .filter-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
-    .filter-spacer { flex: 1; }
-    .btn-export { display: flex; align-items: center; gap: 6px; padding: 6px 14px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 12px; font-weight: 600; color: var(--muted); background: white; cursor: pointer; transition: all 0.15s; text-decoration: none; }
-    .btn-export:hover { border-color: var(--success); color: var(--success); }
+    /* ── FILTER TABS ── */
+    .filter-tabs { display: flex; gap: 4px; padding: 12px 16px; border-bottom: 1px solid var(--border); overflow-x: auto; background: #fafafa; }
+    .filter-tab { padding: 5px 12px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; border: 1px solid transparent; color: var(--muted); white-space: nowrap; transition: all 0.15s; }
+    .filter-tab:hover { background: var(--bg); color: var(--text); }
+    .filter-tab.active { background: var(--primary); color: white; border-color: var(--primary); }
 
-    /* MODAL */
-    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45); backdrop-filter: blur(3px); z-index: 1000; align-items: center; justify-content: center; }
+    /* ── MODAL ── */
+    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 100; align-items: center; justify-content: center; backdrop-filter: blur(2px); }
     .modal-overlay.open { display: flex; }
-    .modal { background: white; border-radius: 20px; padding: 28px; width: 90%; max-width: 640px; max-height: 90vh; overflow-y: auto; position: relative; }
-    .modal-close { position: absolute; top: 16px; right: 16px; background: #f1f5f9; border: none; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; }
-    .modal-close:hover { background: #e2e8f0; }
-    .modal-title { font-size: 18px; font-weight: 700; margin-bottom: 20px; color: var(--text); }
-    .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
-    .detail-item label { font-size: 11px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 3px; }
-    .detail-item span { font-size: 14px; color: var(--text); font-weight: 500; }
-    .photo-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); gap: 8px; margin-bottom: 20px; }
-    .photo-thumb { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 8px; border: 2px solid var(--border); }
-    .resolve-btns { display: flex; gap: 10px; }
-    .btn-complete { flex: 1; padding: 11px; background: #22c55e; color: white; border: none; border-radius: 10px; font-weight: 600; cursor: pointer; font-size: 14px; transition: .15s; }
-    .btn-complete:hover { background: #16a34a; }
-    .btn-refund { flex: 1; padding: 11px; background: #ef4444; color: white; border: none; border-radius: 10px; font-weight: 600; cursor: pointer; font-size: 14px; transition: .15s; }
-    .btn-refund:hover { background: #dc2626; }
+    .modal { background: white; border-radius: 16px; width: 100%; max-width: 620px; max-height: 90vh; overflow-y: auto; margin: 16px; box-shadow: 0 25px 50px rgba(0,0,0,0.15); }
+    .modal-header { padding: 20px 24px 16px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; background: white; z-index: 1; }
+    .modal-title { font-size: 16px; font-weight: 700; }
+    .modal-close { width: 30px; height: 30px; border-radius: 7px; border: none; background: var(--bg); cursor: pointer; font-size: 18px; color: var(--muted); display: flex; align-items: center; justify-content: center; }
+    .modal-body { padding: 20px 24px; }
+    .modal-section { margin-bottom: 20px; }
+    .modal-section-title { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 10px; }
+    .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .info-item { background: var(--bg); border-radius: 8px; padding: 10px 12px; }
+    .info-item-label { font-size: 11px; color: var(--muted); margin-bottom: 3px; }
+    .info-item-value { font-size: 14px; font-weight: 600; color: var(--text); }
+    .code-display { background: #0f172a; color: #a5f3fc; font-family: monospace; font-size: 22px; font-weight: 900; letter-spacing: 6px; padding: 16px; border-radius: 10px; text-align: center; margin: 10px 0; }
+    .photo-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+    .photo-thumb { aspect-ratio: 1; border-radius: 8px; overflow: hidden; background: var(--bg); cursor: pointer; }
+    .photo-thumb img { width: 100%; height: 100%; object-fit: cover; }
+    .modal-actions { display: flex; gap: 8px; padding-top: 16px; border-top: 1px solid var(--border); margin-top: 16px; }
 
-    /* UNBOXING GRID */
-    .unboxing-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
-    .unboxing-card { background: white; border-radius: 14px; padding: 18px; border: 1px solid var(--border); transition: all .2s; }
-    .unboxing-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.08); transform: translateY(-1px); }
-    .unboxing-card-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
-    .unboxing-product { font-size: 14px; font-weight: 600; color: var(--text); }
-    .unboxing-id { font-size: 12px; color: var(--muted); }
-    .unboxing-photos { display: flex; gap: 6px; margin-bottom: 12px; }
-    .unboxing-photos img { width: 60px; height: 60px; object-fit: cover; border-radius: 8px; border: 1px solid var(--border); }
-    .unboxing-meta { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
-    .unboxing-actions { display: flex; gap: 6px; }
-    .btn-approve { padding: 6px 12px; background: #dcfce7; color: #166534; border: none; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; transition: .15s; }
-    .btn-approve:hover { background: #bbf7d0; }
-    .btn-reject { padding: 6px 12px; background: #fee2e2; color: #991b1b; border: none; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; transition: .15s; }
-    .btn-reject:hover { background: #fecaca; }
+    /* ── API KEYS ── */
+    .key-item { display: flex; align-items: center; gap: 12px; padding: 14px 20px; border-bottom: 1px solid #f1f5f9; }
+    .key-item:last-child { border-bottom: none; }
+    .key-icon { width: 36px; height: 36px; background: rgba(99,102,241,0.1); border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
+    .key-info { flex: 1; min-width: 0; }
+    .key-name { font-size: 13px; font-weight: 600; }
+    .key-prefix { font-family: monospace; font-size: 12px; color: var(--muted); }
+    .key-meta { font-size: 11px; color: var(--muted); margin-top: 2px; }
 
-    /* API KEYS */
-    .key-card { display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; border-bottom: 1px solid #f8fafc; gap: 12px; }
-    .key-card:last-child { border-bottom: none; }
-    .key-prefix { font-family: 'Courier New', monospace; font-size: 13px; background: #f1f5f9; padding: 4px 8px; border-radius: 6px; color: var(--text); }
-    .key-name { font-size: 13px; font-weight: 500; color: var(--text); }
-    .key-meta { font-size: 12px; color: var(--muted); margin-top: 2px; }
-    .btn-create-key { padding: 8px 16px; background: var(--primary); color: white; border: none; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; transition: .15s; }
-    .btn-create-key:hover { background: var(--primary-dark); }
-    .btn-revoke { padding: 5px 10px; background: #fee2e2; color: #dc2626; border: none; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; transition: .15s; }
-    .btn-revoke:hover { background: #fecaca; }
-    .new-key-banner { display: none; background: #0f172a; border-radius: 12px; padding: 20px; margin-bottom: 16px; }
-    .new-key-banner h3 { font-size: 14px; font-weight: 700; color: white; margin-bottom: 4px; }
-    .new-key-banner p { font-size: 12px; color: rgba(255,255,255,0.5); margin-bottom: 12px; }
-    .new-key-value { font-family: monospace; font-size: 12px; color: #a5b4fc; background: rgba(255,255,255,0.06); padding: 10px 14px; border-radius: 8px; word-break: break-all; margin-bottom: 10px; }
-    .btn-copy-key { padding: 6px 14px; background: rgba(79,70,229,0.25); color: #a5b4fc; border: 1px solid rgba(79,70,229,0.4); border-radius: 7px; font-size: 12px; font-weight: 600; cursor: pointer; }
+    /* ── UNBOXING CARDS ── */
+    .unboxing-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; padding: 20px; }
+    .unbox-card { border: 1px solid var(--border); border-radius: 10px; overflow: hidden; transition: box-shadow 0.15s; }
+    .unbox-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+    .unbox-card-header { padding: 14px 16px; background: var(--bg); border-bottom: 1px solid var(--border); }
+    .unbox-card-body { padding: 14px 16px; }
+    .unbox-card-photos { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin: 12px 0; }
+    .unbox-photo { aspect-ratio: 1; border-radius: 6px; overflow: hidden; background: #e2e8f0; }
+    .unbox-photo img { width: 100%; height: 100%; object-fit: cover; }
+    .unbox-card-actions { display: flex; gap: 8px; padding: 12px 16px; border-top: 1px solid var(--border); }
 
-    /* SETTINGS */
-    .settings-form { max-width: 520px; }
-    .form-group { margin-bottom: 20px; }
-    .form-label { display: block; font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 6px; }
-    .form-input { width: 100%; padding: 10px 14px; border: 1.5px solid var(--border); border-radius: 10px; font-size: 14px; outline: none; transition: .15s; background: white; }
-    .form-input:focus { border-color: var(--primary); }
-    .form-hint { font-size: 12px; color: var(--muted); margin-top: 4px; }
-    .btn-save { padding: 10px 24px; background: var(--primary); color: white; border: none; border-radius: 10px; font-weight: 600; font-size: 14px; cursor: pointer; transition: .15s; }
-    .btn-save:hover { background: var(--primary-dark); }
-    .btn-test-webhook { padding: 8px 16px; background: white; color: var(--primary); border: 1.5px solid var(--primary); border-radius: 8px; font-weight: 600; font-size: 13px; cursor: pointer; transition: .15s; margin-left: 8px; }
-    .btn-test-webhook:hover { background: #ede9fe; }
+    /* ── SETTINGS ── */
+    .settings-section { padding: 20px; border-bottom: 1px solid var(--border); }
+    .settings-section:last-child { border-bottom: none; }
+    .settings-label { font-size: 13px; font-weight: 600; margin-bottom: 4px; }
+    .settings-desc { font-size: 12px; color: var(--muted); margin-bottom: 12px; }
+    .input { width: 100%; padding: 8px 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 13px; outline: none; transition: border-color 0.15s; background: white; }
+    .input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(99,102,241,0.1); }
 
-    /* MISC */
-    .empty-state { text-align: center; padding: 48px 20px; color: var(--muted); }
-    .empty-state-icon { font-size: 40px; margin-bottom: 12px; }
-    .empty-state h3 { font-size: 16px; color: #475569; font-weight: 600; margin-bottom: 6px; }
-    .empty-state p { font-size: 14px; }
-    .spinner { width: 28px; height: 28px; border: 3px solid var(--border); border-top-color: var(--primary); border-radius: 50%; animation: spin 0.7s linear infinite; margin: 40px auto; }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    .toast { position: fixed; bottom: 24px; right: 24px; background: #0f172a; color: white; padding: 12px 20px; border-radius: 12px; font-size: 14px; font-weight: 500; z-index: 9999; opacity: 0; transform: translateY(8px); transition: all 0.25s; pointer-events: none; display: flex; align-items: center; gap: 8px; }
-    .toast.show { opacity: 1; transform: translateY(0); }
-    .tab-panel { display: none; }
-    .tab-panel.active { display: block; }
-    .section-divider { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
-    .video-link { color: var(--primary); font-size: 12px; text-decoration: none; font-weight: 600; }
-    .video-link:hover { text-decoration: underline; }
-    .inline-badge { display: inline-flex; align-items: center; gap: 4px; padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: 600; margin-right: 4px; }
-    .inline-yes { background: #dcfce7; color: #166534; }
-    .inline-no { background: #fee2e2; color: #991b1b; }
-    pre { background: #0f172a; color: #a5b4fc; padding: 16px; border-radius: 10px; font-size: 12px; overflow-x: auto; margin-top: 10px; line-height: 1.6; }
-    code { font-family: 'Courier New', monospace; }
-    .endpoint-card { background: white; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 12px; overflow: hidden; }
-    .endpoint-header { padding: 14px 18px; display: flex; align-items: center; gap: 10px; cursor: pointer; }
-    .endpoint-header:hover { background: #f8fafc; }
-    .method-badge { padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: 700; font-family: monospace; }
+    /* ── DOCS ── */
+    .docs-section { padding: 24px; }
+    .docs-endpoint { background: var(--bg); border: 1px solid var(--border); border-radius: 10px; margin-bottom: 12px; overflow: hidden; }
+    .docs-endpoint-header { display: flex; align-items: center; gap: 10px; padding: 12px 16px; border-bottom: 1px solid var(--border); background: white; }
+    .method-badge { font-size: 11px; font-weight: 800; padding: 3px 8px; border-radius: 5px; font-family: monospace; }
+    .method-post { background: #d1fae5; color: #065f46; }
     .method-get { background: #dbeafe; color: #1e40af; }
-    .method-post { background: #dcfce7; color: #166534; }
     .method-patch { background: #fef3c7; color: #92400e; }
-    .endpoint-path { font-family: monospace; font-size: 13px; color: var(--text); font-weight: 600; }
-    .endpoint-desc { font-size: 12px; color: var(--muted); margin-left: auto; }
-    .endpoint-body { padding: 0 18px 18px; border-top: 1px solid #f1f5f9; }
+    .docs-path { font-family: monospace; font-size: 13px; font-weight: 600; color: var(--text); }
+    .docs-desc { font-size: 12px; color: var(--muted); padding: 10px 16px; }
+    pre { background: #0f172a; color: #e2e8f0; padding: 14px 16px; font-size: 12px; overflow-x: auto; border-top: 1px solid var(--border); font-family: 'Fira Code', monospace; line-height: 1.6; }
+
+    /* ── TOAST ── */
+    .toast { position: fixed; bottom: 24px; right: 24px; background: #0f172a; color: white; padding: 12px 18px; border-radius: 10px; font-size: 13px; font-weight: 500; z-index: 1000; transform: translateY(80px); opacity: 0; transition: all 0.25s; box-shadow: 0 8px 24px rgba(0,0,0,0.2); max-width: 320px; display: flex; align-items: center; gap: 8px; }
+    .toast.show { transform: translateY(0); opacity: 1; }
+    .toast.success { background: #064e3b; border-left: 3px solid #10b981; }
+    .toast.error { background: #7f1d1d; border-left: 3px solid #ef4444; }
+
+    /* ── LOGIN ── */
+    #loginScreen { display: none; min-height: 100vh; width: 100%; background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%); align-items: center; justify-content: center; }
+    .login-card { background: white; border-radius: 20px; padding: 40px; width: 100%; max-width: 400px; margin: 16px; box-shadow: 0 25px 50px rgba(0,0,0,0.3); }
+    .login-logo { display: flex; align-items: center; gap: 10px; margin-bottom: 28px; justify-content: center; }
+    .login-logo-icon { width: 40px; height: 40px; background: linear-gradient(135deg, #6366f1, #8b5cf6); border-radius: 10px; display: flex; align-items: center; justify-content: center; }
+    .login-logo-icon svg { width: 20px; height: 20px; fill: white; }
+    .login-title { font-size: 22px; font-weight: 800; color: var(--text); }
+    .login-sub { font-size: 13px; color: var(--muted); text-align: center; margin-bottom: 24px; }
+    .form-group { margin-bottom: 16px; }
+    .form-label { display: block; font-size: 12px; font-weight: 600; color: var(--text); margin-bottom: 6px; }
+    .login-tabs { display: flex; background: var(--bg); border-radius: 9px; padding: 3px; margin-bottom: 24px; }
+    .login-tab { flex: 1; padding: 7px; border-radius: 7px; text-align: center; cursor: pointer; font-size: 13px; font-weight: 600; color: var(--muted); transition: all 0.15s; }
+    .login-tab.active { background: white; color: var(--text); box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+    .btn-full { width: 100%; padding: 11px; font-size: 14px; border-radius: 9px; justify-content: center; }
+
+    /* ── NEW KEY BANNER ── */
+    .key-banner { background: #ecfdf5; border: 1px solid #6ee7b7; border-radius: 10px; padding: 14px 16px; margin: 0 20px 16px; display: none; }
+    .key-banner.show { display: block; }
+    .key-banner-title { font-size: 13px; font-weight: 700; color: #065f46; margin-bottom: 6px; }
+    .key-banner-val { font-family: monospace; font-size: 12px; background: #d1fae5; padding: 8px 12px; border-radius: 6px; word-break: break-all; cursor: pointer; color: #064e3b; }
+
+    /* Loading */
+    .loading { text-align: center; padding: 40px; color: var(--muted); font-size: 13px; }
+    .spinner { width: 20px; height: 20px; border: 2px solid var(--border); border-top-color: var(--primary); border-radius: 50%; animation: spin 0.7s linear infinite; display: inline-block; margin-right: 8px; vertical-align: middle; }
+    @keyframes spin { to { transform: rotate(360deg); } }
   </style>
 </head>
 <body>
 
-<!-- SIDEBAR -->
-<aside class="sidebar">
-  <div class="sidebar-header">
-    <a href="/landing.html" class="sidebar-logo">
-      <svg viewBox="0 0 32 32" fill="none"><rect width="32" height="32" rx="8" fill="url(#sg)"/><path d="M16 5L9 9v7c0 4.5 3 8 7 9.5 4-1.5 7-5 7-9.5V9l-7-4z" fill="white" opacity="0.15"/><path d="M16 6L10 10v6.5c0 4 2.5 7.5 6 8.5 3.5-1 6-4.5 6-8.5V10l-6-4z" fill="white" opacity="0.9"/><path d="M13 16l2.5 2.5L19 13" stroke="#4f46e5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><defs><linearGradient id="sg" x1="0" y1="0" x2="32" y2="32"><stop stop-color="#4f46e5"/><stop offset="1" stop-color="#7c3aed"/></linearGradient></defs></svg>
-      <span class="sidebar-logo-text">SafeTrade</span>
-    </a>
-    <div class="sidebar-badge">Business</div>
-  </div>
-  <div class="sidebar-company">
-    <div class="company-avatar" id="sidebar-avatar">?</div>
-    <div>
-      <div class="company-name" id="sidebar-company-name">Chargement...</div>
-      <div class="company-plan" id="sidebar-plan">—</div>
+<!-- LOGIN SCREEN -->
+<div id="loginScreen" style="display:flex">
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="login-logo-icon"><svg viewBox="0 0 24 24"><path d="M12 2L3 7v5c0 5.25 3.75 10.15 9 11.35C17.25 22.15 21 17.25 21 12V7l-9-5z"/></svg></div>
+      <span style="font-size:20px;font-weight:800;color:#0f172a">SafeTrade</span>
     </div>
-  </div>
-  <nav class="sidebar-nav">
-    <div class="nav-section">Principal</div>
-    <div class="nav-item active" data-tab="overview" onclick="showTab('overview',this)">
-      <span class="nav-dot"></span> Tableau de bord
+    <div class="login-tabs">
+      <div class="login-tab active" onclick="switchLoginTab('login',this)">Connexion</div>
+      <div class="login-tab" onclick="switchLoginTab('register',this)">Créer un compte</div>
     </div>
-    <div class="nav-item" data-tab="orders" onclick="showTab('orders',this)">
-      <span class="nav-dot"></span> Commandes
-      <span class="nav-badge" id="nav-badge-orders" style="display:none">0</span>
-    </div>
-    <div class="nav-item" data-tab="unboxings" onclick="showTab('unboxings',this)">
-      <span class="nav-dot"></span> Unboxings à réviser
-      <span class="nav-badge" id="nav-badge-unboxings" style="display:none">0</span>
-    </div>
-    <div class="nav-section">Développeur</div>
-    <div class="nav-item" data-tab="apikeys" onclick="showTab('apikeys',this)">
-      <span class="nav-dot"></span> Clés API
-    </div>
-    <div class="nav-item" data-tab="docs" onclick="showTab('docs',this)">
-      <span class="nav-dot"></span> Documentation
-    </div>
-    <div class="nav-section">Compte</div>
-    <div class="nav-item" data-tab="settings" onclick="showTab('settings',this)">
-      <span class="nav-dot"></span> Paramètres & Webhooks
-    </div>
-  </nav>
-  <div class="sidebar-footer">
-    <button class="btn-logout" onclick="logout()">Se déconnecter</button>
-  </div>
-</aside>
-
-<!-- MAIN -->
-<main class="main">
-  <div class="topbar">
-    <div class="topbar-left">
-      <h1 id="topbar-title">Tableau de bord</h1>
-      <p id="topbar-subtitle">Vue d'ensemble de votre activité</p>
-    </div>
-    <div class="topbar-right">
-      <span class="plan-badge plan-free" id="plan-badge">—</span>
-      <div class="topbar-avatar" id="topbar-avatar">?</div>
-    </div>
-  </div>
-
-  <div class="content">
-
-    <!-- OVERVIEW -->
-    <div class="tab-panel active" id="tab-overview">
-      <div class="stats-grid" id="stats-grid">
-        <div class="spinner" style="grid-column:1/-1"></div>
+    <div id="loginForm">
+      <p class="login-sub">Connectez-vous à votre espace entreprise</p>
+      <div class="form-group">
+        <label class="form-label">Email professionnel</label>
+        <input class="input" type="email" id="loginEmail" placeholder="contact@votre-boutique.com" />
       </div>
-      <div class="charts-row">
-        <div class="card" style="margin-bottom:0">
-          <div class="card-header">
-            <span class="card-title">Activité par statut</span>
-          </div>
-          <div class="card-body">
-            <div class="chart-wrap"><canvas id="chartBar"></canvas></div>
-          </div>
-        </div>
-        <div class="card" style="margin-bottom:0">
-          <div class="card-header">
-            <span class="card-title">Répartition</span>
-          </div>
-          <div class="card-body">
-            <div class="chart-wrap"><canvas id="chartDoughnut"></canvas></div>
-          </div>
-        </div>
+      <div class="form-group">
+        <label class="form-label">Mot de passe</label>
+        <input class="input" type="password" id="loginPassword" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()" />
       </div>
-      <div style="margin-top:20px"></div>
-      <div class="card">
-        <div class="card-header">
-          <span class="card-title">Commandes récentes</span>
-          <button class="card-action" onclick="showTab('orders',null)">Voir tout →</button>
-        </div>
-        <div id="recent-orders-table"><div class="spinner"></div></div>
-      </div>
-      <div class="card">
-        <div class="card-header">
-          <span class="card-title">Unboxings récents</span>
-          <button class="card-action" onclick="showTab('unboxings',null)">Voir tout →</button>
-        </div>
-        <div id="recent-unboxings-list"><div class="spinner"></div></div>
-      </div>
+      <button class="btn btn-primary btn-full" onclick="doLogin()">Se connecter →</button>
+      <p style="text-align:center;font-size:12px;color:var(--muted);margin-top:14px">Démo : contact@nike-demo.com / nike123</p>
     </div>
-
-    <!-- ORDERS -->
-    <div class="tab-panel" id="tab-orders">
-      <div class="filter-bar">
-        <button class="filter-btn active" onclick="filterOrders('')" data-status="">Toutes</button>
-        <button class="filter-btn" onclick="filterOrders('pending')" data-status="pending">En attente</button>
-        <button class="filter-btn" onclick="filterOrders('shipped')" data-status="shipped">Expédiées</button>
-        <button class="filter-btn" onclick="filterOrders('unboxing_pending')" data-status="unboxing_pending">Unboxing ouvert</button>
-        <button class="filter-btn" onclick="filterOrders('unboxing_submitted')" data-status="unboxing_submitted">Soumis</button>
-        <button class="filter-btn" onclick="filterOrders('completed')" data-status="completed">Complétées</button>
-        <button class="filter-btn" onclick="filterOrders('refunded')" data-status="refunded">Remboursées</button>
-        <div class="filter-spacer"></div>
-        <a href="/api/company/export/orders.csv" class="btn-export" id="export-btn" download>
-          ↓ Exporter CSV
-        </a>
+    <div id="registerForm" style="display:none">
+      <p class="login-sub">Créez votre compte et commencez gratuitement</p>
+      <div class="form-group">
+        <label class="form-label">Nom de l'entreprise</label>
+        <input class="input" type="text" id="regName" placeholder="Ma Boutique" />
       </div>
-      <div class="card">
-        <div id="orders-table-wrap"><div class="spinner"></div></div>
+      <div class="form-group">
+        <label class="form-label">Email professionnel</label>
+        <input class="input" type="email" id="regEmail" placeholder="contact@maboutique.com" />
       </div>
+      <div class="form-group">
+        <label class="form-label">Mot de passe</label>
+        <input class="input" type="password" id="regPassword" placeholder="Minimum 8 caractères" />
+      </div>
+      <button class="btn btn-primary btn-full" onclick="doRegister()">Créer mon compte →</button>
     </div>
-
-    <!-- UNBOXINGS -->
-    <div class="tab-panel" id="tab-unboxings">
-      <div id="unboxings-grid-wrap"><div class="spinner"></div></div>
-    </div>
-
-    <!-- API KEYS -->
-    <div class="tab-panel" id="tab-apikeys">
-      <div class="new-key-banner" id="new-key-banner">
-        <h3>🎉 Nouvelle clé créée</h3>
-        <p>Copiez cette clé maintenant — elle ne sera plus jamais affichée.</p>
-        <div class="new-key-value" id="new-key-value"></div>
-        <button class="btn-copy-key" onclick="copyNewKey()">Copier la clé</button>
-      </div>
-      <div class="card">
-        <div class="card-header">
-          <span class="card-title">Vos clés API</span>
-          <button class="btn-create-key" onclick="createApiKey()">+ Créer une clé</button>
-        </div>
-        <div id="api-keys-table-wrap"><div class="spinner"></div></div>
-      </div>
-    </div>
-
-    <!-- DOCS -->
-    <div class="tab-panel" id="tab-docs">
-      <div class="card">
-        <div class="card-header"><span class="card-title">Documentation API</span></div>
-        <div class="card-body">
-          <p style="font-size:14px;color:var(--muted);margin-bottom:16px">Toutes les requêtes nécessitent votre clé API en header.</p>
-          <pre><code>Authorization: Bearer sk_live_xxxxxxxxxxxx...</code></pre>
-
-          <h3 style="font-size:14px;font-weight:700;margin:28px 0 12px">Commandes</h3>
-          <div class="endpoint-card">
-            <div class="endpoint-header">
-              <span class="method-badge method-post">POST</span>
-              <span class="endpoint-path">/api/b2b/orders</span>
-              <span class="endpoint-desc">Créer une commande</span>
-            </div>
-            <div class="endpoint-body">
-              <pre><code>curl -X POST https://safetrade.onrender.com/api/b2b/orders \
-  -H "Authorization: Bearer sk_live_..." \
-  -H "Content-Type: application/json" \
-  -d '{
-    "external_order_id": "ORDER-123",
-    "customer_email": "client@example.com",
-    "customer_name": "Jean Dupont",
-    "product_name": "Produit XYZ",
-    "order_amount": 99.99
-  }'</code></pre>
-            </div>
-          </div>
-          <div class="endpoint-card">
-            <div class="endpoint-header">
-              <span class="method-badge method-get">GET</span>
-              <span class="endpoint-path">/api/b2b/orders</span>
-              <span class="endpoint-desc">Lister les commandes</span>
-            </div>
-          </div>
-          <div class="endpoint-card">
-            <div class="endpoint-header">
-              <span class="method-badge method-patch">PATCH</span>
-              <span class="endpoint-path">/api/b2b/orders/:id/ship</span>
-              <span class="endpoint-desc">Marquer comme expédiée</span>
-            </div>
-          </div>
-          <div class="endpoint-card">
-            <div class="endpoint-header">
-              <span class="method-badge method-patch">PATCH</span>
-              <span class="endpoint-path">/api/b2b/orders/:id/deliver</span>
-              <span class="endpoint-desc">Confirmer la livraison (ouvre l'unboxing)</span>
-            </div>
-          </div>
-          <div class="endpoint-card">
-            <div class="endpoint-header">
-              <span class="method-badge method-get">GET</span>
-              <span class="endpoint-path">/api/b2b/stats</span>
-              <span class="endpoint-desc">Statistiques de votre compte</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- SETTINGS -->
-    <div class="tab-panel" id="tab-settings">
-      <div class="card" style="max-width:560px">
-        <div class="card-header"><span class="card-title">Webhook URL</span></div>
-        <div class="card-body">
-          <p style="font-size:14px;color:var(--muted);margin-bottom:20px">Recevez des événements POST en temps réel : <code style="background:#f1f5f9;padding:2px 6px;border-radius:4px;font-size:12px">unboxing.submitted</code></p>
-          <div class="form-group">
-            <label class="form-label">URL de votre webhook</label>
-            <input type="url" class="form-input" id="webhook-url-input" placeholder="https://votre-site.com/webhook">
-            <p class="form-hint">SafeTrade enverra un POST JSON à cette URL à chaque unboxing soumis.</p>
-          </div>
-          <div style="display:flex;align-items:center;gap:10px">
-            <button class="btn-save" onclick="saveWebhook()">Sauvegarder</button>
-            <button class="btn-test-webhook" onclick="testWebhook()">Tester</button>
-          </div>
-          <div id="webhook-status" style="margin-top:12px;font-size:13px"></div>
-        </div>
-      </div>
-    </div>
-
-  </div>
-</main>
-
-<!-- ORDER DETAIL MODAL -->
-<div class="modal-overlay" id="orderModal">
-  <div class="modal">
-    <button class="modal-close" onclick="closeModal()">✕</button>
-    <div class="modal-title" id="modal-title">Détail de la commande</div>
-    <div id="modal-content"></div>
   </div>
 </div>
 
+<!-- DASHBOARD -->
+<div id="appScreen" style="display:none;width:100%;display:none">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <a href="/" class="sidebar-logo">
+        <div class="logo-icon"><svg viewBox="0 0 24 24"><path d="M12 2L3 7v5c0 5.25 3.75 10.15 9 11.35C17.25 22.15 21 17.25 21 12V7l-9-5z"/></svg></div>
+        <span class="logo-text">SafeTrade</span>
+        <span class="logo-badge">B2B</span>
+      </a>
+    </div>
+    <div class="sidebar-company">
+      <div class="company-row">
+        <div class="company-avatar" id="companyAvatar">?</div>
+        <div>
+          <div class="company-name" id="companyName">Chargement...</div>
+          <div class="plan-badge" id="planBadge">⭐ Starter</div>
+        </div>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-group">
+        <div class="nav-label">Principal</div>
+        <div class="nav-item active" onclick="showTab('overview',this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+          Tableau de bord
+        </div>
+        <div class="nav-item" onclick="showTab('orders',this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="2"/></svg>
+          Commandes
+          <span class="nav-count" id="navOrderCount" style="display:none">0</span>
+        </div>
+        <div class="nav-item" onclick="showTab('unboxings',this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg>
+          Unboxings
+          <span class="nav-count" id="navUnboxCount" style="display:none">0</span>
+        </div>
+      </div>
+      <div class="nav-group">
+        <div class="nav-label">Développeur</div>
+        <div class="nav-item" onclick="showTab('apikeys',this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 11-7.778 7.778 5.5 5.5 0 017.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>
+          Clés API
+        </div>
+        <div class="nav-item" onclick="showTab('docs',this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          Documentation
+        </div>
+      </div>
+      <div class="nav-group">
+        <div class="nav-label">Compte</div>
+        <div class="nav-item" onclick="showTab('settings',this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+          Paramètres & Webhooks
+        </div>
+      </div>
+    </nav>
+    <div class="sidebar-footer">
+      <button class="btn-logout" onclick="logout()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        Déconnexion
+      </button>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="main">
+    <div class="topbar">
+      <div>
+        <div class="topbar-title" id="topbarTitle">Tableau de bord</div>
+        <div class="topbar-sub" id="topbarSub">Vue d'ensemble de votre activité</div>
+      </div>
+      <div class="topbar-actions">
+        <a href="/api/company/export/orders.csv" id="exportBtn" class="btn btn-ghost btn-sm" style="display:none">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Exporter CSV
+        </a>
+      </div>
+    </div>
+
+    <div class="content" id="mainContent">
+      <div class="loading"><span class="spinner"></span>Chargement...</div>
+    </div>
+  </main>
+</div>
+
+<!-- Order Detail Modal -->
+<div class="modal-overlay" id="orderModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modalTitle">Détail commande</div>
+      <button class="modal-close" onclick="closeModal()">×</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+  </div>
+</div>
+
+<!-- Toast -->
 <div class="toast" id="toast"></div>
 
 <script>
@@ -455,8 +383,7 @@ const API = '/api/company';
 let token = localStorage.getItem('company_token');
 let currentOrderStatus = '';
 let chartBar = null, chartDoughnut = null;
-
-if (!token) { window.location.href = '/company/login.html'; }
+let newKeyValue = '';
 
 function getHeaders() {
   return { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token };
@@ -468,361 +395,552 @@ async function api(path, opts = {}) {
   return r.json();
 }
 
+function toast(msg, type = '') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'toast show ' + type;
+  setTimeout(() => el.className = 'toast', 3000);
+}
+
+// ── AUTH ──
+function switchLoginTab(tab, el) {
+  document.querySelectorAll('.login-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('loginForm').style.display = tab === 'login' ? 'block' : 'none';
+  document.getElementById('registerForm').style.display = tab === 'register' ? 'block' : 'none';
+}
+
+async function doLogin() {
+  const email = document.getElementById('loginEmail').value;
+  const password = document.getElementById('loginPassword').value;
+  if (!email || !password) return toast('Remplissez tous les champs', 'error');
+  const res = await fetch('/api/b2b/auth/login', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ email, password }) });
+  const data = await res.json();
+  if (!res.ok) return toast(data.error || 'Erreur de connexion', 'error');
+  token = data.token;
+  localStorage.setItem('company_token', token);
+  showDashboard();
+}
+
+async function doRegister() {
+  const name = document.getElementById('regName').value;
+  const email = document.getElementById('regEmail').value;
+  const password = document.getElementById('regPassword').value;
+  if (!name || !email || !password) return toast('Remplissez tous les champs', 'error');
+  const res = await fetch('/api/b2b/auth/register', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ name, email, password }) });
+  const data = await res.json();
+  if (!res.ok) return toast(data.error || 'Erreur', 'error');
+  token = data.token;
+  localStorage.setItem('company_token', token);
+  if (data.api_key) toast('✅ Compte créé ! Clé API : ' + data.api_key.slice(0,20) + '...', 'success');
+  showDashboard();
+}
+
 function logout() {
   localStorage.removeItem('company_token');
-  window.location.href = '/company/login.html';
+  token = null;
+  document.getElementById('loginScreen').style.display = 'flex';
+  document.getElementById('appScreen').style.display = 'none';
 }
 
-function showToast(msg, type='success') {
-  const t = document.getElementById('toast');
-  t.textContent = (type === 'success' ? '✓ ' : '⚠ ') + msg;
-  t.style.background = type === 'success' ? '#0f172a' : '#dc2626';
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 3000);
+function showDashboard() {
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('appScreen').style.display = 'flex';
+  loadOverview();
 }
 
-const TAB_TITLES = {
-  overview: ['Tableau de bord', 'Vue d\'ensemble de votre activité'],
-  orders: ['Commandes', 'Gérez toutes vos commandes'],
-  unboxings: ['Unboxings à réviser', 'Validez ou remboursez les unboxings soumis'],
-  apikeys: ['Clés API', 'Gérez vos clés d\'accès à l\'API'],
-  docs: ['Documentation', 'Guide d\'intégration de l\'API'],
-  settings: ['Paramètres', 'Configuration de votre compte']
-};
+// ── INIT ──
+if (token) {
+  showDashboard();
+} else {
+  document.getElementById('loginScreen').style.display = 'flex';
+}
 
+// ── TABS ──
 function showTab(name, el) {
-  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-  document.getElementById('tab-' + name).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
   if (el) el.classList.add('active');
-  else { const item = document.querySelector(`.nav-item[data-tab="${name}"]`); if (item) item.classList.add('active'); }
-  const [title, sub] = TAB_TITLES[name] || [name, ''];
-  document.getElementById('topbar-title').textContent = title;
-  document.getElementById('topbar-subtitle').textContent = sub;
-  if (name === 'orders') loadOrders(currentOrderStatus);
-  if (name === 'unboxings') loadUnboxings();
-  if (name === 'apikeys') loadApiKeys();
-  if (name === 'settings') loadWebhook();
+
+  const titles = {
+    overview: ['Tableau de bord', "Vue d'ensemble de votre activité"],
+    orders: ['Commandes', 'Gérez et suivez toutes vos commandes'],
+    unboxings: ['Unboxings à réviser', 'Vidéos et photos soumises par vos clients'],
+    apikeys: ['Clés API', 'Gérez vos clés d\'accès à l\'API SafeTrade'],
+    docs: ['Documentation API', 'Intégrez SafeTrade à votre boutique'],
+    settings: ['Paramètres & Webhooks', 'Configurez votre compte et notifications']
+  };
+  const [title, sub] = titles[name] || ['Dashboard', ''];
+  document.getElementById('topbarTitle').textContent = title;
+  document.getElementById('topbarSub').textContent = sub;
+  document.getElementById('exportBtn').style.display = name === 'orders' ? 'flex' : 'none';
+
+  if (name === 'overview') loadOverview();
+  else if (name === 'orders') loadOrders();
+  else if (name === 'unboxings') loadUnboxings();
+  else if (name === 'apikeys') loadApiKeys();
+  else if (name === 'docs') renderDocs();
+  else if (name === 'settings') loadSettings();
 }
 
-// ---- OVERVIEW ----
+// ── OVERVIEW ──
 async function loadOverview() {
   const data = await api('/overview');
   if (!data) return;
+
   const { company, stats, recent_orders, recent_unboxings } = data;
 
-  // Sidebar
-  document.getElementById('sidebar-avatar').textContent = company.name[0].toUpperCase();
-  document.getElementById('topbar-avatar').textContent = company.name[0].toUpperCase();
-  document.getElementById('sidebar-company-name').textContent = company.name;
-  document.getElementById('sidebar-plan').textContent = company.plan || 'starter';
-  const planBadge = document.getElementById('plan-badge');
-  planBadge.textContent = (company.plan || 'starter').toUpperCase();
-  planBadge.className = 'plan-badge plan-' + (company.plan || 'free');
+  document.getElementById('companyAvatar').textContent = company.name[0].toUpperCase();
+  document.getElementById('companyName').textContent = company.name;
+  document.getElementById('planBadge').textContent = '⭐ ' + (company.plan || 'Starter');
 
-  // Badges
   if (stats.to_review > 0) {
-    const nb = document.getElementById('nav-badge-unboxings');
-    nb.style.display = 'flex'; nb.textContent = stats.to_review;
-  }
-  if (stats.pending > 0) {
-    const nb = document.getElementById('nav-badge-orders');
-    nb.style.display = 'flex'; nb.textContent = stats.pending;
+    document.getElementById('navUnboxCount').style.display = 'flex';
+    document.getElementById('navUnboxCount').textContent = stats.to_review;
   }
 
-  // Stats cards
-  document.getElementById('stats-grid').innerHTML = `
-    <div class="stat-card">
-      <div class="stat-card-top">
-        <span class="stat-card-label">Total commandes</span>
-        <div class="stat-card-icon" style="background:#ede9fe">📦</div>
+  const ordersHtml = recent_orders.length === 0
+    ? `<div class="empty-state"><div class="empty-icon">📦</div><div class="empty-title">Aucune commande</div><div class="empty-sub">Vos premières commandes apparaîtront ici</div></div>`
+    : `<table>
+        <thead><tr><th>Commande</th><th>Client</th><th>Montant</th><th>Statut</th><th>Date</th></tr></thead>
+        <tbody>${recent_orders.map(o => `
+          <tr style="cursor:pointer" onclick="openOrderModal(${o.id})">
+            <td><div class="td-product">${o.product_name}</div><div class="td-id">#${o.external_order_id}</div></td>
+            <td><div class="td-customer">${o.customer_name || '—'}</div><div class="td-email">${o.customer_email}</div></td>
+            <td><div class="td-amount">${o.order_amount} ${o.currency}</div></td>
+            <td>${statusBadge(o.status)}</td>
+            <td class="td-date">${fmtDate(o.created_at)}</td>
+          </tr>`).join('')}
+        </tbody>
+      </table>`;
+
+  document.getElementById('mainContent').innerHTML = `
+    <div class="stats-grid">
+      <div class="stat-card blue">
+        <div class="stat-header">
+          <span class="stat-label">Total commandes</span>
+          <div class="stat-icon blue">📦</div>
+        </div>
+        <div class="stat-value">${stats.total_orders}</div>
+        <div class="stat-sub">Depuis votre inscription</div>
       </div>
-      <div class="stat-card-val">${stats.total_orders}</div>
-      <div class="stat-card-trend trend-neutral">Toutes commandes cumulées</div>
+      <div class="stat-card green">
+        <div class="stat-header">
+          <span class="stat-label">Complétées</span>
+          <div class="stat-icon green">✅</div>
+        </div>
+        <div class="stat-value">${stats.completed}</div>
+        ${stats.total_orders > 0 ? `<div class="stat-trend up">↑ ${Math.round(stats.completed/stats.total_orders*100)}% taux de succès</div>` : '<div class="stat-sub">—</div>'}
+      </div>
+      <div class="stat-card orange">
+        <div class="stat-header">
+          <span class="stat-label">À réviser</span>
+          <div class="stat-icon orange">🎥</div>
+        </div>
+        <div class="stat-value">${stats.to_review}</div>
+        <div class="stat-sub">${stats.to_review > 0 ? '<span style="color:#d97706;font-weight:600">⚠ Action requise</span>' : 'Aucune action requise'}</div>
+      </div>
+      <div class="stat-card purple">
+        <div class="stat-header">
+          <span class="stat-label">Fraudes évitées</span>
+          <div class="stat-icon purple">🛡️</div>
+        </div>
+        <div class="stat-value">${stats.fraud_prevented}</div>
+        <div class="stat-sub">Remboursements bloqués</div>
+      </div>
     </div>
-    <div class="stat-card">
-      <div class="stat-card-top">
-        <span class="stat-card-label">En cours</span>
-        <div class="stat-card-icon" style="background:#dbeafe">⏳</div>
+
+    <div class="charts-row">
+      <div class="chart-card">
+        <div class="chart-title">Activité par statut</div>
+        <div class="chart-sub">Répartition de vos commandes</div>
+        <div class="chart-wrap"><canvas id="barChart"></canvas></div>
       </div>
-      <div class="stat-card-val">${stats.pending}</div>
-      <div class="stat-card-trend trend-neutral">En attente d'action</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-card-top">
-        <span class="stat-card-label">À réviser</span>
-        <div class="stat-card-icon" style="background:#fef9c3">🎬</div>
-      </div>
-      <div class="stat-card-val" style="color:${stats.to_review > 0 ? '#d97706' : 'inherit'}">${stats.to_review}</div>
-      <div class="stat-card-trend ${stats.to_review > 0 ? 'trend-down' : 'trend-neutral'}">
-        ${stats.to_review > 0 ? '⚠ Unboxings soumis' : 'Aucun en attente'}
+      <div class="chart-card">
+        <div class="chart-title">Répartition</div>
+        <div class="chart-sub">Vue proportionnelle</div>
+        <div class="chart-wrap"><canvas id="doughnutChart"></canvas></div>
       </div>
     </div>
-    <div class="stat-card">
-      <div class="stat-card-top">
-        <span class="stat-card-label">Fraudes évitées</span>
-        <div class="stat-card-icon" style="background:#dcfce7">🛡️</div>
+
+    <div class="section-card">
+      <div class="section-header">
+        <span class="section-title">Commandes récentes</span>
+        <span class="section-count">${recent_orders.length}</span>
       </div>
-      <div class="stat-card-val" style="color:#059669">${stats.fraud_prevented}</div>
-      <div class="stat-card-trend trend-up">↑ Remboursements bloqués</div>
+      ${ordersHtml}
     </div>
+
+    ${recent_unboxings.length > 0 ? `
+    <div class="section-card">
+      <div class="section-header">
+        <span class="section-title">Derniers unboxings</span>
+        <span class="section-count">${recent_unboxings.length}</span>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;padding:16px">
+        ${recent_unboxings.map(u => unboxingMiniCard(u)).join('')}
+      </div>
+    </div>` : ''}
   `;
 
-  // Charts
-  renderCharts(stats);
-
-  // Recent orders
-  document.getElementById('recent-orders-table').innerHTML = renderOrdersTable(recent_orders.slice(0, 5));
-
-  // Recent unboxings
-  document.getElementById('recent-unboxings-list').innerHTML = recent_unboxings.length === 0
-    ? '<div class="empty-state"><div class="empty-state-icon">🎬</div><h3>Aucun unboxing encore</h3><p>Ils apparaîtront ici dès qu\'un client soumet son unboxing.</p></div>'
-    : `<div class="unboxing-grid" style="padding:16px">${recent_unboxings.map(u => renderUnboxingCard(u)).join('')}</div>`;
+  renderCharts(recent_orders);
 }
 
-function renderCharts(stats) {
-  const statusMap = {
-    pending: { label: 'En attente', color: '#fbbf24' },
-    shipped: { label: 'Expédiées', color: '#60a5fa' },
-    unboxing_pending: { label: 'Unboxing ouvert', color: '#a78bfa' },
-    unboxing_submitted: { label: 'Soumis', color: '#fb923c' },
-    completed: { label: 'Complétées', color: '#34d399' },
-    refunded: { label: 'Remboursées', color: '#f87171' }
-  };
-  const labels = [], values = [], colors = [];
-  for (const [key, meta] of Object.entries(statusMap)) {
-    const count = (stats.status_breakdown || []).find(s => s.status === key)?.count || 0;
-    labels.push(meta.label);
-    values.push(count);
-    colors.push(meta.color);
-  }
+function renderCharts(orders) {
+  const statusLabels = { pending: 'En attente', shipped: 'Expédiées', unboxing_pending: 'Unboxing ouvert', unboxing_submitted: 'Soumis', completed: 'Complétées', refunded: 'Remboursées' };
+  const statusColors = ['#f59e0b','#3b82f6','#8b5cf6','#eab308','#10b981','#ef4444'];
+  const counts = {};
+  Object.keys(statusLabels).forEach(k => counts[k] = 0);
+  orders.forEach(o => { if (counts[o.status] !== undefined) counts[o.status]++; });
+
+  const labels = Object.values(statusLabels);
+  const values = Object.values(counts);
 
   if (chartBar) chartBar.destroy();
   if (chartDoughnut) chartDoughnut.destroy();
 
-  const barCtx = document.getElementById('chartBar').getContext('2d');
-  chartBar = new Chart(barCtx, {
-    type: 'bar',
-    data: { labels, datasets: [{ data: values, backgroundColor: colors, borderRadius: 6, borderSkipped: false }] },
-    options: {
-      responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { display: false } },
-      scales: {
-        x: { grid: { display: false }, ticks: { font: { size: 11 }, color: '#64748b' } },
-        y: { grid: { color: '#f1f5f9' }, ticks: { font: { size: 11 }, color: '#64748b', stepSize: 1 }, beginAtZero: true }
-      }
-    }
-  });
+  const barCtx = document.getElementById('barChart')?.getContext('2d');
+  if (barCtx) {
+    chartBar = new Chart(barCtx, {
+      type: 'bar',
+      data: { labels, datasets: [{ data: values, backgroundColor: statusColors, borderRadius: 6, borderSkipped: false }] },
+      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 }, grid: { color: '#f1f5f9' } }, x: { grid: { display: false }, ticks: { font: { size: 10 } } } } }
+    });
+  }
 
-  const doCtx = document.getElementById('chartDoughnut').getContext('2d');
-  const total = values.reduce((a, b) => a + b, 0);
-  chartDoughnut = new Chart(doCtx, {
-    type: 'doughnut',
-    data: { labels, datasets: [{ data: values.map(v => v || 0), backgroundColor: colors, borderWidth: 2, borderColor: '#fff' }] },
-    options: {
-      responsive: true, maintainAspectRatio: false, cutout: '65%',
-      plugins: {
-        legend: { position: 'bottom', labels: { font: { size: 11 }, padding: 12, boxWidth: 10 } },
-        tooltip: { callbacks: { label: (ctx) => ` ${ctx.label}: ${ctx.raw} (${total > 0 ? Math.round(ctx.raw/total*100) : 0}%)` } }
-      }
-    }
-  });
+  const dCtx = document.getElementById('doughnutChart')?.getContext('2d');
+  if (dCtx) {
+    const nonZero = values.some(v => v > 0);
+    chartDoughnut = new Chart(dCtx, {
+      type: 'doughnut',
+      data: { labels, datasets: [{ data: nonZero ? values : [1], backgroundColor: nonZero ? statusColors : ['#e2e8f0'], borderWidth: 0 }] },
+      options: { responsive: true, maintainAspectRatio: false, cutout: '65%', plugins: { legend: { position: 'bottom', labels: { font: { size: 10 }, padding: 8, boxWidth: 10 } } } }
+    });
+  }
 }
 
-// ---- ORDERS ----
-function renderOrdersTable(orders) {
-  if (!orders.length) return '<div class="empty-state"><div class="empty-state-icon">📦</div><h3>Aucune commande</h3><p>Vos commandes apparaîtront ici.</p></div>';
-  return `<div class="table-wrap"><table>
-    <thead><tr><th>ID</th><th>Produit</th><th>Client</th><th>Montant</th><th>Statut</th><th>Confiance IA</th><th>Date</th><th></th></tr></thead>
-    <tbody>${orders.map(o => `
-      <tr>
-        <td><span class="td-mono">#${o.id}</span></td>
-        <td><div class="td-name">${o.product_name}</div><div class="td-email">${o.external_order_id || ''}</div></td>
-        <td><div class="td-name">${o.customer_name || '—'}</div><div class="td-email">${o.customer_email}</div></td>
-        <td style="font-weight:600">${o.order_amount ? o.order_amount.toFixed(2) + ' ' + (o.currency || 'EUR') : '—'}</td>
-        <td>${renderStatusBadge(o.status)}</td>
-        <td>${o.ai_confidence ? renderConfBar(o.ai_confidence) : '—'}</td>
-        <td style="color:var(--muted);font-size:12px">${new Date(o.created_at).toLocaleDateString('fr')}</td>
-        <td><button class="card-action" onclick="openOrderModal(${o.id})">Détails →</button></td>
-      </tr>`).join('')}</tbody>
-  </table></div>`;
-}
-
-function renderStatusBadge(status) {
-  const labels = { pending:'En attente', shipped:'Expédiée', unboxing_pending:'Unboxing ouvert', unboxing_submitted:'Soumis', completed:'Complétée', refunded:'Remboursée', disputed:'Litige' };
-  return `<span class="badge badge-${status}">${labels[status] || status}</span>`;
-}
-
-function renderConfBar(conf) {
-  const pct = Math.round(conf * 100);
-  const color = pct >= 75 ? '#22c55e' : pct >= 50 ? '#f59e0b' : '#ef4444';
-  return `<div class="conf-wrap"><div class="conf-bar"><div class="conf-fill" style="width:${pct}%;background:${color}"></div></div><span class="conf-pct" style="color:${color}">${pct}%</span></div>`;
-}
-
-async function loadOrders(status = '') {
-  currentOrderStatus = status;
-  const exportBtn = document.getElementById('export-btn');
-  if (exportBtn) exportBtn.href = '/api/company/export/orders.csv' + (status ? '?status=' + status : '');
-  document.getElementById('orders-table-wrap').innerHTML = '<div class="spinner"></div>';
-  const data = await api('/orders?status=' + status + '&page=1');
-  if (!data) return;
-  document.getElementById('orders-table-wrap').innerHTML = renderOrdersTable(data.orders);
-}
-
-function filterOrders(status) {
-  document.querySelectorAll('.filter-btn').forEach(b => b.classList.toggle('active', b.dataset.status === status));
-  loadOrders(status);
-}
-
-// ---- ORDER MODAL ----
-async function openOrderModal(id) {
-  document.getElementById('orderModal').classList.add('open');
-  document.getElementById('modal-content').innerHTML = '<div class="spinner"></div>';
-  const data = await api('/orders/' + id);
-  if (!data) return;
-  const u = data.unboxing;
-  document.getElementById('modal-title').textContent = `Commande #${data.id} — ${data.product_name}`;
-  document.getElementById('modal-content').innerHTML = `
-    <div class="detail-grid">
-      <div class="detail-item"><label>Client</label><span>${data.customer_name || '—'}</span></div>
-      <div class="detail-item"><label>Email</label><span>${data.customer_email}</span></div>
-      <div class="detail-item"><label>Montant</label><span>${data.order_amount} ${data.currency || 'EUR'}</span></div>
-      <div class="detail-item"><label>Statut</label><span>${renderStatusBadge(data.status)}</span></div>
-      <div class="detail-item"><label>Code vérif.</label><span class="td-mono">${data.verification_code}</span></div>
-      <div class="detail-item"><label>ID Externe</label><span>${data.external_order_id || '—'}</span></div>
-      ${data.tracking_number ? `<div class="detail-item"><label>Suivi</label><span>${data.tracking_number} (${data.carrier || '—'})</span></div>` : ''}
+function unboxingMiniCard(u) {
+  const pct = Math.round((u.ai_confidence || 0) * 100);
+  const color = pct >= 80 ? '#10b981' : pct >= 60 ? '#f59e0b' : '#ef4444';
+  return `<div style="border:1px solid var(--border);border-radius:10px;padding:14px">
+    <div style="font-size:13px;font-weight:600;margin-bottom:4px">${u.product_name}</div>
+    <div style="font-size:11px;color:var(--muted);margin-bottom:10px">${u.customer_email}</div>
+    ${u.photo_urls?.length > 0 ? `<div style="display:flex;gap:4px;margin-bottom:10px">${u.photo_urls.slice(0,3).map(p=>`<img src="${p}" style="width:48px;height:48px;border-radius:6px;object-fit:cover;background:#e2e8f0">`).join('')}</div>` : ''}
+    <div style="display:flex;align-items:center;gap:8px">
+      <div style="flex:1;height:4px;background:#e2e8f0;border-radius:4px"><div style="width:${pct}%;height:100%;background:${color};border-radius:4px"></div></div>
+      <span style="font-size:11px;font-weight:700;color:${color}">${pct}%</span>
     </div>
-    ${u ? `
-      <div class="section-divider">Unboxing soumis</div>
-      <div class="detail-grid" style="margin-bottom:16px">
-        <div class="detail-item"><label>Confiance IA</label><span>${renderConfBar(u.ai_confidence)}</span></div>
-        <div class="detail-item"><label>Code visible</label><span>${u.code_visible ? '<span class="inline-badge inline-yes">✓ Oui</span>' : '<span class="inline-badge inline-no">✗ Non</span>'}</span></div>
-        <div class="detail-item"><label>État produit</label><span>${u.condition_ok ? '<span class="inline-badge inline-yes">✓ OK</span>' : '<span class="inline-badge inline-no">✗ Problème</span>'}</span></div>
-        ${u.customer_notes ? `<div class="detail-item" style="grid-column:1/-1"><label>Notes client</label><span>${u.customer_notes}</span></div>` : ''}
-      </div>
-      ${u.photo_urls && u.photo_urls.length ? `<div class="photo-grid">${u.photo_urls.map(p => `<img src="${p}" class="photo-thumb" onerror="this.style.display='none'">`).join('')}</div>` : ''}
-      ${u.video_url ? `<p style="margin-bottom:16px"><a href="${u.video_url}" target="_blank" class="video-link">▶ Voir la vidéo d'unboxing</a></p>` : ''}
-      ${['unboxing_submitted'].includes(data.status) ? `
-        <div class="resolve-btns">
-          <button class="btn-complete" onclick="resolveOrder(${data.id},'completed')">✓ Valider la commande</button>
-          <button class="btn-refund" onclick="resolveOrder(${data.id},'refunded')">↩ Rembourser</button>
-        </div>` : ''}
-    ` : `<div class="empty-state" style="padding:24px"><div class="empty-state-icon">⏳</div><h3>Unboxing pas encore soumis</h3><p>Le client n'a pas encore filmé son unboxing.</p></div>`}
-  `;
-}
-
-async function resolveOrder(id, resolution) {
-  const r = await api('/orders/' + id + '/resolve', { method: 'POST', body: JSON.stringify({ resolution }) });
-  if (r) { showToast(resolution === 'completed' ? 'Commande validée !' : 'Remboursement validé !'); closeModal(); loadOverview(); }
-}
-
-function closeModal() { document.getElementById('orderModal').classList.remove('open'); }
-document.getElementById('orderModal').addEventListener('click', (e) => { if (e.target === e.currentTarget) closeModal(); });
-
-// ---- UNBOXINGS ----
-function renderUnboxingCard(u) {
-  const photos = (u.photo_urls || []).slice(0, 3).map(p => `<img src="${p}" onerror="this.style.display='none'">`).join('');
-  return `<div class="unboxing-card">
-    <div class="unboxing-card-top">
-      <div><div class="unboxing-product">${u.product_name}</div><div class="unboxing-id">${u.external_order_id || ''} · ${u.customer_email}</div></div>
-      ${renderConfBar(u.ai_confidence)}
-    </div>
-    ${photos ? `<div class="unboxing-photos">${photos}</div>` : ''}
-    <div class="unboxing-meta">
-      ${u.code_visible ? '<span class="badge badge-completed">✓ Code visible</span>' : '<span class="badge badge-disputed">✗ Code absent</span>'}
-      ${u.condition_ok ? '<span class="badge badge-completed">✓ État OK</span>' : '<span class="badge badge-refunded">⚠ Problème</span>'}
-    </div>
-    ${u.resolution ? `<div style="font-size:12px;color:var(--muted)">${renderStatusBadge(u.resolution)}</div>` :
-    `<div class="unboxing-actions">
-      <button class="btn-approve" onclick="resolveUnboxing(${u.b2b_order_id},'completed')">✓ Valider</button>
-      <button class="btn-reject" onclick="resolveUnboxing(${u.b2b_order_id},'refunded')">↩ Rembourser</button>
-      <button class="card-action" onclick="openOrderModal(${u.b2b_order_id})" style="margin-left:auto">Détails →</button>
-    </div>`}
   </div>`;
 }
 
-async function loadUnboxings() {
-  document.getElementById('unboxings-grid-wrap').innerHTML = '<div class="spinner"></div>';
-  const data = await api('/overview');
+// ── ORDERS ──
+async function loadOrders(status = '') {
+  currentOrderStatus = status;
+  document.getElementById('mainContent').innerHTML = `
+    <div class="section-card">
+      <div class="filter-tabs">
+        ${[['','Toutes'],['pending','En attente'],['shipped','Expédiées'],['unboxing_pending','Unboxing ouvert'],['unboxing_submitted','À réviser'],['completed','Complétées'],['refunded','Remboursées']].map(([s,l])=>`
+          <div class="filter-tab ${status===s?'active':''}" onclick="loadOrders('${s}')">${l}</div>`).join('')}
+      </div>
+      <div id="ordersTable"><div class="loading"><span class="spinner"></span>Chargement...</div></div>
+    </div>`;
+
+  const data = await api(`/orders?status=${status}&page=1`);
   if (!data) return;
-  const unboxings = data.recent_unboxings;
-  document.getElementById('unboxings-grid-wrap').innerHTML = unboxings.length === 0
-    ? '<div class="empty-state"><div class="empty-state-icon">🎬</div><h3>Aucun unboxing à réviser</h3><p>Tout est à jour !</p></div>'
-    : `<div class="unboxing-grid">${unboxings.map(u => renderUnboxingCard(u)).join('')}</div>`;
+
+  document.getElementById('ordersTable').innerHTML = data.orders.length === 0
+    ? `<div class="empty-state"><div class="empty-icon">📋</div><div class="empty-title">Aucune commande</div><div class="empty-sub">Aucune commande pour ce filtre</div></div>`
+    : `<table>
+        <thead><tr><th>Commande</th><th>Client</th><th>Montant</th><th>Statut</th><th>IA</th><th>Date</th></tr></thead>
+        <tbody>${data.orders.map(o => `
+          <tr style="cursor:pointer" onclick="openOrderModal(${o.id})">
+            <td><div class="td-product">${o.product_name}</div><div class="td-id">#${o.external_order_id}</div></td>
+            <td><div class="td-customer">${o.customer_name||'—'}</div><div class="td-email">${o.customer_email}</div></td>
+            <td><div class="td-amount">${o.order_amount} ${o.currency}</div></td>
+            <td>${statusBadge(o.status)}</td>
+            <td>${o.ai_confidence ? aiBar(o.ai_confidence) : '<span style="color:var(--muted)">—</span>'}</td>
+            <td class="td-date">${fmtDate(o.created_at)}</td>
+          </tr>`).join('')}
+        </tbody>
+      </table>`;
 }
 
-async function resolveUnboxing(orderId, resolution) {
-  const r = await api('/orders/' + orderId + '/resolve', { method: 'POST', body: JSON.stringify({ resolution }) });
-  if (r) { showToast(resolution === 'completed' ? 'Validé !' : 'Remboursement validé !'); loadUnboxings(); loadOverview(); }
+// ── ORDER MODAL ──
+async function openOrderModal(id) {
+  document.getElementById('orderModal').classList.add('open');
+  document.getElementById('modalBody').innerHTML = `<div class="loading"><span class="spinner"></span>Chargement...</div>`;
+
+  const data = await api(`/orders/${id}`);
+  if (!data) return;
+
+  const u = data.unboxing;
+  document.getElementById('modalTitle').textContent = data.product_name;
+
+  document.getElementById('modalBody').innerHTML = `
+    <div class="modal-section">
+      <div class="modal-section-title">Informations commande</div>
+      <div class="info-grid">
+        <div class="info-item"><div class="info-item-label">Client</div><div class="info-item-value">${data.customer_name||'—'}</div></div>
+        <div class="info-item"><div class="info-item-label">Email</div><div class="info-item-value" style="font-size:12px">${data.customer_email}</div></div>
+        <div class="info-item"><div class="info-item-label">Montant</div><div class="info-item-value">${data.order_amount} ${data.currency}</div></div>
+        <div class="info-item"><div class="info-item-label">Statut</div><div class="info-item-value">${statusBadge(data.status)}</div></div>
+        <div class="info-item"><div class="info-item-label">ID externe</div><div class="info-item-value" style="font-family:monospace;font-size:12px">${data.external_order_id}</div></div>
+        <div class="info-item"><div class="info-item-label">Date</div><div class="info-item-value" style="font-size:12px">${fmtDate(data.created_at)}</div></div>
+      </div>
+    </div>
+
+    <div class="modal-section">
+      <div class="modal-section-title">Code de vérification</div>
+      <div class="code-display">${data.verification_code}</div>
+    </div>
+
+    ${u ? `
+    <div class="modal-section">
+      <div class="modal-section-title">Unboxing soumis</div>
+      <div class="info-grid" style="margin-bottom:12px">
+        <div class="info-item"><div class="info-item-label">Confiance IA</div><div class="info-item-value">${Math.round((u.ai_confidence||0)*100)}%</div></div>
+        <div class="info-item"><div class="info-item-label">Code visible</div><div class="info-item-value">${u.code_visible ? '✅ Oui' : '❌ Non'}</div></div>
+        <div class="info-item"><div class="info-item-label">État colis</div><div class="info-item-value">${u.condition_ok ? '✅ Bon état' : '⚠️ Problème'}</div></div>
+        <div class="info-item"><div class="info-item-label">Résolution</div><div class="info-item-value">${u.resolution || '—'}</div></div>
+      </div>
+      ${u.photo_urls?.length > 0 ? `
+        <div class="photo-grid">
+          ${u.photo_urls.map(p=>`<div class="photo-thumb"><img src="${p}" onerror="this.src='/api/placeholder/1'"></div>`).join('')}
+        </div>` : ''}
+    </div>
+    ` : `<div style="background:var(--bg);border-radius:10px;padding:16px;text-align:center;color:var(--muted);font-size:13px">📭 Aucun unboxing soumis pour cette commande</div>`}
+
+    ${data.status === 'unboxing_submitted' ? `
+    <div class="modal-actions">
+      <button class="btn btn-success" style="flex:1" onclick="resolveOrder(${id},'completed')">✅ Valider — Livraison conforme</button>
+      <button class="btn btn-danger" style="flex:1" onclick="resolveOrder(${id},'refunded')">🔄 Rembourser le client</button>
+    </div>` : ''}
+
+    <div style="margin-top:12px">
+      <button class="btn btn-ghost btn-sm" onclick="sendInvite(${id})">📧 Renvoyer l'email unboxing</button>
+    </div>
+  `;
 }
 
-// ---- API KEYS ----
-async function loadApiKeys() {
-  document.getElementById('api-keys-table-wrap').innerHTML = '<div class="spinner"></div>';
-  const keys = await api('/api-keys');
-  if (!keys) return;
-  if (!keys.length) {
-    document.getElementById('api-keys-table-wrap').innerHTML = '<div class="empty-state"><div class="empty-state-icon">🔑</div><h3>Aucune clé API</h3><p>Créez votre première clé pour intégrer SafeTrade.</p></div>';
+function closeModal() { document.getElementById('orderModal').classList.remove('open'); }
+document.getElementById('orderModal').addEventListener('click', e => { if (e.target === document.getElementById('orderModal')) closeModal(); });
+
+async function resolveOrder(id, resolution) {
+  const r = await api(`/orders/${id}/resolve`, { method: 'POST', body: JSON.stringify({ resolution }) });
+  if (r) { toast(resolution === 'completed' ? '✅ Commande validée' : '🔄 Remboursement validé', 'success'); closeModal(); loadOrders(currentOrderStatus); }
+}
+
+async function sendInvite(id) {
+  const r = await api(`/orders/${id}/send-invite`, { method: 'POST' });
+  if (r) toast('📧 Email envoyé', 'success');
+}
+
+// ── UNBOXINGS ──
+async function loadUnboxings() {
+  document.getElementById('mainContent').innerHTML = `<div class="loading"><span class="spinner"></span>Chargement...</div>`;
+  const data = await api('/orders?status=unboxing_submitted');
+  if (!data) return;
+
+  if (data.orders.length === 0) {
+    document.getElementById('mainContent').innerHTML = `<div class="section-card"><div class="empty-state"><div class="empty-icon">🎉</div><div class="empty-title">Tout est à jour !</div><div class="empty-sub">Aucun unboxing en attente de révision</div></div></div>`;
     return;
   }
-  document.getElementById('api-keys-table-wrap').innerHTML = keys.map(k => `
-    <div class="key-card">
-      <div>
-        <span class="key-prefix">${k.key_prefix}</span>
-        <div class="key-name" style="margin-top:4px">${k.name || 'Clé sans nom'}</div>
-        <div class="key-meta">Créée le ${new Date(k.created_at).toLocaleDateString('fr')} · ${k.requests_count || 0} requêtes · ${k.is_active ? '<span style="color:#059669">Active</span>' : '<span style="color:#dc2626">Inactive</span>'}</div>
+
+  document.getElementById('mainContent').innerHTML = `
+    <div class="section-card">
+      <div class="section-header"><span class="section-title">Unboxings à réviser</span><span class="section-count">${data.orders.length}</span></div>
+      <div class="unboxing-grid">
+        ${data.orders.map(o => `
+          <div class="unbox-card">
+            <div class="unbox-card-header">
+              <div style="font-size:13px;font-weight:700">${o.product_name}</div>
+              <div style="font-size:11px;color:var(--muted);margin-top:2px">${o.customer_email} · #${o.external_order_id}</div>
+            </div>
+            <div class="unbox-card-body">
+              ${o.ai_confidence ? `
+                <div style="margin-bottom:10px">
+                  <div style="display:flex;justify-content:space-between;font-size:11px;font-weight:600;margin-bottom:5px">
+                    <span style="color:var(--muted)">Score IA</span>
+                    <span style="color:${o.ai_confidence>=0.8?'#10b981':o.ai_confidence>=0.6?'#f59e0b':'#ef4444'}">${Math.round(o.ai_confidence*100)}%</span>
+                  </div>
+                  <div style="height:5px;background:#e2e8f0;border-radius:99px"><div style="width:${Math.round(o.ai_confidence*100)}%;height:100%;background:${o.ai_confidence>=0.8?'#10b981':o.ai_confidence>=0.6?'#f59e0b':'#ef4444'};border-radius:99px"></div></div>
+                </div>` : ''}
+              <div style="display:flex;gap:6px">
+                ${o.code_visible !== null && o.code_visible !== undefined ? `<span style="font-size:11px;font-weight:600;padding:3px 8px;border-radius:5px;background:${o.code_visible?'#d1fae5':'#fee2e2'};color:${o.code_visible?'#065f46':'#991b1b'}">${o.code_visible?'✅ Code visible':'❌ Code absent'}</span>` : ''}
+                ${o.condition_ok !== null && o.condition_ok !== undefined ? `<span style="font-size:11px;font-weight:600;padding:3px 8px;border-radius:5px;background:${o.condition_ok?'#d1fae5':'#fef3c7'};color:${o.condition_ok?'#065f46':'#92400e'}">${o.condition_ok?'✅ Bon état':'⚠️ Problème'}</span>` : ''}
+              </div>
+            </div>
+            <div class="unbox-card-actions">
+              <button class="btn btn-ghost btn-sm" onclick="openOrderModal(${o.id})" style="flex:1">Voir détail</button>
+              <button class="btn btn-success btn-sm" onclick="resolveAndRefresh(${o.id},'completed')" style="flex:1">✅ Valider</button>
+              <button class="btn btn-danger btn-sm" onclick="resolveAndRefresh(${o.id},'refunded')">↩</button>
+            </div>
+          </div>`).join('')}
       </div>
-      ${k.is_active ? `<button class="btn-revoke" onclick="revokeKey(${k.id})">Révoquer</button>` : ''}
-    </div>`).join('');
+    </div>`;
+}
+
+async function resolveAndRefresh(id, resolution) {
+  await resolveOrder(id, resolution);
+  loadUnboxings();
+}
+
+// ── API KEYS ──
+async function loadApiKeys() {
+  document.getElementById('mainContent').innerHTML = `<div class="loading"><span class="spinner"></span>Chargement...</div>`;
+  const keys = await api('/api-keys');
+  if (!keys) return;
+
+  document.getElementById('mainContent').innerHTML = `
+    <div class="section-card">
+      <div class="section-header">
+        <span class="section-title">Clés API</span>
+        <button class="btn btn-primary btn-sm" onclick="createApiKey()">+ Nouvelle clé</button>
+      </div>
+      <div id="keyBanner" class="key-banner">
+        <div class="key-banner-title">🔑 Copiez votre clé — elle ne sera plus affichée</div>
+        <div class="key-banner-val" id="keyBannerVal" onclick="copyKey()">—</div>
+        <button class="btn btn-ghost btn-sm" style="margin-top:8px" onclick="copyKey()">📋 Copier</button>
+      </div>
+      ${keys.length === 0 ? `<div class="empty-state"><div class="empty-icon">🔑</div><div class="empty-title">Aucune clé API</div></div>` :
+        keys.map(k => `
+          <div class="key-item">
+            <div class="key-icon">🔑</div>
+            <div class="key-info">
+              <div class="key-name">${k.name}</div>
+              <div class="key-prefix">${k.key_prefix}</div>
+              <div class="key-meta">${k.requests_count} requêtes · Créée le ${fmtDate(k.created_at)}${k.last_used_at ? ' · Utilisée le ' + fmtDate(k.last_used_at) : ''}</div>
+            </div>
+            <span class="badge ${k.is_active ? 'badge-completed' : 'badge-refunded'}">${k.is_active ? 'Active' : 'Inactive'}</span>
+            ${k.is_active ? `<button class="btn btn-ghost btn-sm" onclick="revokeKey(${k.id})">Révoquer</button>` : ''}
+          </div>`).join('')}
+    </div>`;
 }
 
 async function createApiKey() {
-  const name = prompt('Nom de la clé (ex: Production, Shopify)');
-  if (name === null) return;
+  const name = prompt('Nom de la clé (ex: Production, Shopify):', 'Production');
+  if (!name) return;
   const r = await api('/api-keys', { method: 'POST', body: JSON.stringify({ name }) });
   if (r?.api_key) {
-    const banner = document.getElementById('new-key-banner');
-    document.getElementById('new-key-value').textContent = r.api_key;
-    banner.style.display = 'block';
+    newKeyValue = r.api_key;
+    document.getElementById('keyBannerVal').textContent = r.api_key;
+    document.getElementById('keyBanner').classList.add('show');
     loadApiKeys();
   }
 }
 
-function copyNewKey() {
-  const key = document.getElementById('new-key-value').textContent;
-  navigator.clipboard.writeText(key).then(() => showToast('Clé copiée !'));
+function copyKey() {
+  navigator.clipboard.writeText(newKeyValue || document.getElementById('keyBannerVal').textContent);
+  toast('✅ Clé copiée !', 'success');
 }
 
 async function revokeKey(id) {
-  if (!confirm('Révoquer cette clé ? Les intégrations utilisant cette clé cesseront de fonctionner.')) return;
-  await api('/api-keys/' + id, { method: 'DELETE' });
-  showToast('Clé révoquée');
+  if (!confirm('Révoquer cette clé ? Elle ne fonctionnera plus.')) return;
+  await api(`/api-keys/${id}`, { method: 'DELETE' });
+  toast('Clé révoquée', 'success');
   loadApiKeys();
 }
 
-// ---- SETTINGS ----
-async function loadWebhook() {
+// ── SETTINGS ──
+async function loadSettings() {
   const data = await api('/webhooks');
-  if (data) document.getElementById('webhook-url-input').value = data.webhook_url || '';
+  document.getElementById('mainContent').innerHTML = `
+    <div class="section-card" style="max-width:600px">
+      <div class="section-header"><span class="section-title">Webhook</span></div>
+      <div class="settings-section">
+        <div class="settings-label">URL de notification</div>
+        <div class="settings-desc">SafeTrade enverra un POST à cette URL à chaque événement (unboxing soumis, commande complétée...)</div>
+        <div style="display:flex;gap:8px">
+          <input class="input" id="webhookUrl" value="${data?.webhook_url||''}" placeholder="https://votre-boutique.com/api/safetrade-webhook" />
+          <button class="btn btn-primary" onclick="saveWebhook()">Sauvegarder</button>
+        </div>
+        ${data?.webhook_url ? `<button class="btn btn-ghost btn-sm" style="margin-top:10px" onclick="testWebhook()">🔔 Tester le webhook</button>` : ''}
+      </div>
+      <div class="section-header" style="border-top:1px solid var(--border)"><span class="section-title">Exporter les données</span></div>
+      <div class="settings-section">
+        <div class="settings-desc">Téléchargez toutes vos commandes en format CSV (compatible Excel)</div>
+        <a href="/api/company/export/orders.csv" class="btn btn-ghost btn-sm">📥 Télécharger CSV</a>
+      </div>
+    </div>`;
 }
 
 async function saveWebhook() {
-  const url = document.getElementById('webhook-url-input').value;
-  await api('/webhooks', { method: 'PUT', body: JSON.stringify({ webhook_url: url }) });
-  showToast('Webhook sauvegardé !');
+  const url = document.getElementById('webhookUrl').value;
+  const r = await api('/webhooks', { method: 'PUT', body: JSON.stringify({ webhook_url: url }) });
+  if (r) toast('✅ Webhook enregistré', 'success');
 }
 
 async function testWebhook() {
-  const status = document.getElementById('webhook-status');
-  status.textContent = 'Envoi en cours...';
-  status.style.color = 'var(--muted)';
   const r = await api('/webhooks/test', { method: 'POST' });
-  if (r?.success) { status.textContent = '✓ Webhook reçu avec succès (HTTP ' + r.status + ')'; status.style.color = 'var(--success)'; }
-  else { status.textContent = '✗ ' + (r?.error || 'Erreur de connexion'); status.style.color = 'var(--danger)'; }
+  if (r) toast(r.success ? `✅ Webhook OK (${r.status})` : `❌ Erreur (${r.status})`, r.success ? 'success' : 'error');
 }
 
-// ---- INIT ----
-loadOverview();
+// ── DOCS ──
+function renderDocs() {
+  document.getElementById('mainContent').innerHTML = `
+    <div class="section-card" style="max-width:720px">
+      <div class="section-header"><span class="section-title">Intégration API</span></div>
+      <div class="docs-section">
+        <p style="font-size:13px;color:var(--muted);margin-bottom:20px">Intégrez SafeTrade à votre boutique en quelques lignes de code. Authentifiez-vous avec votre clé API dans le header <code style="background:var(--bg);padding:2px 6px;border-radius:4px;font-size:12px">Authorization: Bearer sk_live_...</code></p>
+
+        <div class="docs-endpoint">
+          <div class="docs-endpoint-header">
+            <span class="method-badge method-post">POST</span>
+            <span class="docs-path">/api/b2b/orders</span>
+          </div>
+          <div class="docs-desc">Créer une commande avec code de vérification unique</div>
+          <pre>{
+  "external_order_id": "CMD-12345",
+  "customer_email": "client@email.com",
+  "customer_name": "Jean Dupont",
+  "product_name": "Nike Air Max 90",
+  "order_amount": 120.00
+}</pre>
+        </div>
+
+        <div class="docs-endpoint">
+          <div class="docs-endpoint-header">
+            <span class="method-badge method-patch">PATCH</span>
+            <span class="docs-path">/api/b2b/orders/:id/deliver</span>
+          </div>
+          <div class="docs-desc">Marquer comme livré → ouvre la fenêtre unboxing 48h + envoie l'email au client</div>
+        </div>
+
+        <div class="docs-endpoint">
+          <div class="docs-endpoint-header">
+            <span class="method-badge method-get">GET</span>
+            <span class="docs-path">/api/b2b/orders/:id</span>
+          </div>
+          <div class="docs-desc">Récupérer le statut d'une commande et les données unboxing</div>
+        </div>
+
+        <div class="docs-endpoint">
+          <div class="docs-endpoint-header">
+            <span class="method-badge method-patch">PATCH</span>
+            <span class="docs-path">/api/b2b/orders/:id/resolve</span>
+          </div>
+          <div class="docs-desc">Résoudre une commande après révision unboxing</div>
+          <pre>{ "resolution": "completed" }  // ou "refunded"</pre>
+        </div>
+      </div>
+    </div>`;
+}
+
+// ── HELPERS ──
+function statusBadge(s) {
+  const labels = { pending:'En attente', shipped:'Expédiée', unboxing_pending:'Unboxing ouvert', unboxing_submitted:'À réviser', completed:'Complétée', refunded:'Remboursée', disputed:'Litige' };
+  return `<span class="badge badge-${s}">${labels[s]||s}</span>`;
+}
+
+function aiBar(v) {
+  const pct = Math.round(v * 100);
+  const color = pct >= 80 ? '#10b981' : pct >= 60 ? '#f59e0b' : '#ef4444';
+  return `<div class="ai-bar-wrap"><div class="ai-bar-bg"><div class="ai-bar-fill" style="width:${pct}%;background:${color}"></div></div><div class="ai-score" style="color:${color}">${pct}%</div></div>`;
+}
+
+function fmtDate(d) {
+  if (!d) return '—';
+  return new Date(d).toLocaleDateString('fr-FR', { day:'2-digit', month:'short', year:'numeric' });
+}
 </script>
 </body>
 </html>
