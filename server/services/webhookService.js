@@ -1,11 +1,8 @@
 const db = require('../db');
 
-// Add webhook_url column if missing
-try { db.prepare('ALTER TABLE companies ADD COLUMN webhook_url TEXT').run(); } catch(e) {}
-
 async function sendWebhook(companyId, event, data) {
   try {
-    const company = db.prepare('SELECT webhook_url, name FROM companies WHERE id = ?').get(companyId);
+    const company = await db.get('SELECT webhook_url, name FROM companies WHERE id = ?', companyId);
     if (!company?.webhook_url) return;
 
     const payload = {
