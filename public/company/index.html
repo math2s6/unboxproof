@@ -861,25 +861,82 @@ async function revokeKey(id) {
 
 // ── SETTINGS ──
 async function loadSettings() {
-  const data = await api('/webhooks');
+  const [webhookData, company] = await Promise.all([api('/webhooks'), api('/overview').then(d => d?.company)]);
   document.getElementById('mainContent').innerHTML = `
-    <div class="section-card" style="max-width:600px">
-      <div class="section-header"><span class="section-title">Webhook</span></div>
-      <div class="settings-section">
-        <div class="settings-label">URL de notification</div>
-        <div class="settings-desc">UnboxProof enverra un POST à cette URL à chaque événement (unboxing soumis, commande complétée...)</div>
-        <div style="display:flex;gap:8px">
-          <input class="input" id="webhookUrl" value="${data?.webhook_url||''}" placeholder="https://votre-boutique.com/api/unboxproof-webhook" />
-          <button class="btn btn-primary" onclick="saveWebhook()">Sauvegarder</button>
+    <div style="max-width:600px;display:flex;flex-direction:column;gap:16px">
+
+      <div class="section-card">
+        <div class="section-header"><span class="section-title">Profil de l'entreprise</span></div>
+        <div class="settings-section">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+            <div>
+              <div class="settings-label">Nom de l'entreprise</div>
+              <input class="input" id="profileName" value="${company?.name||''}" placeholder="Votre entreprise">
+            </div>
+            <div>
+              <div class="settings-label">Site web</div>
+              <input class="input" id="profileWebsite" value="${company?.website||''}" placeholder="https://votre-boutique.com">
+            </div>
+          </div>
+          <div style="margin-bottom:12px">
+            <div class="settings-label">Secteur d'activité</div>
+            <input class="input" id="profileIndustry" value="${company?.industry||''}" placeholder="Mode, Électronique, Sport...">
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="saveProfile()">Enregistrer</button>
         </div>
-        ${data?.webhook_url ? `<button class="btn btn-ghost btn-sm" style="margin-top:10px" onclick="testWebhook()">🔔 Tester le webhook</button>` : ''}
       </div>
-      <div class="section-header" style="border-top:1px solid var(--border)"><span class="section-title">Exporter les données</span></div>
-      <div class="settings-section">
-        <div class="settings-desc">Téléchargez toutes vos commandes en format CSV (compatible Excel)</div>
-        <a href="/api/company/export/orders.csv" class="btn btn-ghost btn-sm">📥 Télécharger CSV</a>
+
+      <div class="section-card">
+        <div class="section-header"><span class="section-title">Changer le mot de passe</span></div>
+        <div class="settings-section">
+          <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:12px">
+            <input class="input" type="password" id="currentPw" placeholder="Mot de passe actuel">
+            <input class="input" type="password" id="newPw" placeholder="Nouveau mot de passe (8+ caractères)">
+            <input class="input" type="password" id="newPw2" placeholder="Confirmer le nouveau mot de passe">
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="changePassword()">Mettre à jour</button>
+        </div>
+      </div>
+
+      <div class="section-card">
+        <div class="section-header"><span class="section-title">Webhook</span></div>
+        <div class="settings-section">
+          <div class="settings-label">URL de notification</div>
+          <div class="settings-desc">UnboxProof enverra un POST à cette URL à chaque événement (unboxing soumis, commande complétée...)</div>
+          <div style="display:flex;gap:8px">
+            <input class="input" id="webhookUrl" value="${webhookData?.webhook_url||''}" placeholder="https://votre-boutique.com/api/unboxproof-webhook" />
+            <button class="btn btn-primary" onclick="saveWebhook()">Sauvegarder</button>
+          </div>
+          ${webhookData?.webhook_url ? `<button class="btn btn-ghost btn-sm" style="margin-top:10px" onclick="testWebhook()">🔔 Tester le webhook</button>` : ''}
+        </div>
+      </div>
+
+      <div class="section-card">
+        <div class="section-header"><span class="section-title">Exporter les données</span></div>
+        <div class="settings-section">
+          <div class="settings-desc">Téléchargez toutes vos commandes en format CSV (compatible Excel)</div>
+          <a href="/api/company/export/orders.csv" class="btn btn-ghost btn-sm">📥 Télécharger CSV</a>
+        </div>
       </div>
     </div>`;
+}
+
+async function saveProfile() {
+  const name = document.getElementById('profileName').value.trim();
+  if (!name) { toast('Nom requis', 'error'); return; }
+  const r = await api('/profile', { method: 'PUT', body: JSON.stringify({ name, website: document.getElementById('profileWebsite').value, industry: document.getElementById('profileIndustry').value }) });
+  if (r) { toast('✅ Profil mis à jour', 'success'); document.getElementById('companyName').textContent = name; }
+}
+
+async function changePassword() {
+  const cur = document.getElementById('currentPw').value;
+  const nw = document.getElementById('newPw').value;
+  const nw2 = document.getElementById('newPw2').value;
+  if (!cur || !nw) { toast('Remplissez tous les champs', 'error'); return; }
+  if (nw !== nw2) { toast('Les mots de passe ne correspondent pas', 'error'); return; }
+  if (nw.length < 8) { toast('8 caractères minimum', 'error'); return; }
+  const r = await api('/password', { method: 'PUT', body: JSON.stringify({ current_password: cur, new_password: nw }) });
+  if (r) { toast('✅ Mot de passe mis à jour', 'success'); document.getElementById('currentPw').value = ''; document.getElementById('newPw').value = ''; document.getElementById('newPw2').value = ''; }
 }
 
 async function saveWebhook() {

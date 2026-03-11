@@ -85,6 +85,30 @@ router.post('/orders/:id/send-invite', async (req, res, next) => {
   } catch (e) { next(e); }
 });
 
+router.put('/profile', async (req, res, next) => {
+  try {
+    const { name, website, industry } = req.body;
+    if (!name) return res.status(400).json({ error: 'Nom requis' });
+    await db.run('UPDATE companies SET name=?, website=?, industry=? WHERE id=?', name.trim(), website || '', industry || '', req.company.id);
+    res.json({ message: 'Profil mis à jour' });
+  } catch(e) { next(e); }
+});
+
+router.put('/password', async (req, res, next) => {
+  try {
+    const bcrypt = require('bcrypt');
+    const { current_password, new_password } = req.body;
+    if (!current_password || !new_password) return res.status(400).json({ error: 'Champs manquants' });
+    if (new_password.length < 8) return res.status(400).json({ error: 'Nouveau mot de passe trop court (8 caractères min.)' });
+    const company = await db.get('SELECT password_hash FROM companies WHERE id = ?', req.company.id);
+    const ok = await bcrypt.compare(current_password, company.password_hash);
+    if (!ok) return res.status(401).json({ error: 'Mot de passe actuel incorrect' });
+    const hash = await bcrypt.hash(new_password, 10);
+    await db.run('UPDATE companies SET password_hash = ? WHERE id = ?', hash, req.company.id);
+    res.json({ message: 'Mot de passe mis à jour' });
+  } catch(e) { next(e); }
+});
+
 router.get('/webhooks', async (req, res) => {
   const company = await db.get('SELECT webhook_url FROM companies WHERE id = ?', req.company.id);
   res.json({ webhook_url: company?.webhook_url || null });
