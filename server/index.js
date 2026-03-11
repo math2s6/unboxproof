@@ -15,8 +15,8 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
-// Static files
-app.use(express.static(path.join(__dirname, '../public')));
+// Static files (disable auto index.html so our route handles /)
+app.use(express.static(path.join(__dirname, '../public'), { index: false }));
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 // Placeholder image generator
