@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Études de cas — UnboxProof</title>
+  <meta name="description" content="Découvrez comment des e-commerçants ont réduit leurs fraudes aux retours de 78% en moyenne avec UnboxProof. Résultats chiffrés, témoignages et ROI réels.">
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f8fafc;color:#1e293b}
+
+    nav{background:#0a0a1e;padding:14px 40px;display:flex;align-items:center;justify-content:space-between}
+    .nav-logo{color:white;font-size:18px;font-weight:800;text-decoration:none;letter-spacing:-0.5px}
+    .nav-right{display:flex;align-items:center;gap:16px}
+    .nav-back{color:rgba(255,255,255,0.55);font-size:14px;text-decoration:none}
+    .nav-back:hover{color:white}
+    .nav-cta{background:linear-gradient(135deg,#4f46e5,#7c3aed);color:white;padding:8px 18px;border-radius:8px;font-size:13px;font-weight:600;text-decoration:none}
+
+    .page-hero{background:linear-gradient(135deg,#0a0a1e,#1a1a3e);padding:80px 40px 60px;text-align:center}
+    .page-hero-tag{display:inline-flex;align-items:center;gap:8px;background:rgba(79,70,229,0.2);border:1px solid rgba(79,70,229,0.4);color:#a5b4fc;padding:6px 16px;border-radius:100px;font-size:13px;font-weight:500;margin-bottom:20px}
+    .page-hero h1{font-size:clamp(28px,4vw,48px);font-weight:800;color:white;line-height:1.15;letter-spacing:-0.5px;margin-bottom:16px}
+    .page-hero h1 span{background:linear-gradient(135deg,#818cf8,#c084fc);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+    .page-hero p{font-size:17px;color:rgba(255,255,255,0.55);max-width:580px;margin:0 auto}
+
+    /* GLOBAL STATS */
+    .global-stats{background:white;border-bottom:1px solid #e2e8f0;padding:40px}
+    .global-stats-inner{max-width:900px;margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr);gap:32px;text-align:center}
+    .gs-num{font-size:40px;font-weight:900;letter-spacing:-1px;margin-bottom:4px}
+    .gs-label{font-size:13px;color:#64748b;line-height:1.4}
+
+    /* CASE STUDIES */
+    .layout{max-width:1000px;margin:0 auto;padding:60px 40px}
+    @media(max-width:768px){.layout{padding:40px 20px}.global-stats-inner{grid-template-columns:repeat(2,1fr)}.page-hero{padding:60px 20px 40px}nav{padding:14px 20px}.nav-right{gap:8px}}
+
+    .case-study{background:white;border-radius:24px;border:1px solid #e2e8f0;overflow:hidden;margin-bottom:32px;box-shadow:0 2px 12px rgba(0,0,0,0.04)}
+
+    .cs-header{display:grid;grid-template-columns:1fr auto;align-items:center;gap:24px;padding:32px 36px;border-bottom:1px solid #f1f5f9}
+    @media(max-width:640px){.cs-header{grid-template-columns:1fr;padding:24px}.cs-kpis{grid-template-columns:1fr 1fr!important}}
+    .cs-company{display:flex;align-items:center;gap:16px}
+    .cs-logo{width:52px;height:52px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800;color:white;flex-shrink:0}
+    .cs-company-name{font-size:20px;font-weight:800;color:#1e293b;margin-bottom:2px}
+    .cs-company-meta{font-size:13px;color:#64748b}
+    .cs-sector{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;padding:4px 12px;border-radius:100px;margin-left:8px}
+
+    .cs-kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+    .cs-kpi{text-align:center;background:#f8fafc;border-radius:12px;padding:16px 12px}
+    .cs-kpi-num{font-size:26px;font-weight:900;line-height:1;margin-bottom:4px}
+    .cs-kpi-label{font-size:11px;color:#64748b;font-weight:500}
+
+    .cs-body{padding:32px 36px}
+    @media(max-width:640px){.cs-body{padding:24px}}
+    .cs-grid{display:grid;grid-template-columns:1fr 1fr;gap:32px}
+    @media(max-width:640px){.cs-grid{grid-template-columns:1fr}}
+
+    .cs-section-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#94a3b8;margin-bottom:12px}
+    .cs-text{font-size:15px;color:#334155;line-height:1.7}
+    .cs-list{list-style:none;display:flex;flex-direction:column;gap:8px}
+    .cs-list li{display:flex;align-items:flex-start;gap:10px;font-size:14px;color:#334155;line-height:1.5}
+    .cs-list li::before{content:'→';color:#4f46e5;font-weight:700;flex-shrink:0;margin-top:1px}
+
+    .cs-quote{background:linear-gradient(135deg,#f5f3ff,#ede9fe);border-left:4px solid #4f46e5;border-radius:0 14px 14px 0;padding:20px 24px;margin-top:24px}
+    .cs-quote-text{font-size:15px;color:#3730a3;line-height:1.7;font-style:italic;margin-bottom:12px}
+    .cs-quote-author{font-size:13px;font-weight:700;color:#4f46e5}
+    .cs-quote-role{font-size:12px;color:#6d28d9}
+
+    .cs-timeline{margin-top:24px}
+    .cs-timeline-title{font-size:13px;font-weight:700;color:#1e293b;margin-bottom:16px}
+    .timeline-row{display:flex;align-items:center;gap:12px;margin-bottom:12px;font-size:14px}
+    .timeline-week{background:#4f46e5;color:white;font-size:11px;font-weight:700;padding:3px 10px;border-radius:100px;flex-shrink:0;min-width:60px;text-align:center}
+    .timeline-text{color:#334155}
+    .timeline-result{margin-left:auto;font-weight:700;color:#059669;font-size:13px}
+
+    .cs-footer{background:#f8fafc;border-top:1px solid #f1f5f9;padding:20px 36px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
+    .cs-tags{display:flex;gap:8px;flex-wrap:wrap}
+    .cs-tag{background:white;border:1px solid #e2e8f0;color:#64748b;font-size:12px;font-weight:500;padding:4px 12px;border-radius:100px}
+
+    /* CTA */
+    .cta-section{background:linear-gradient(135deg,#0a0a1e,#1a1a3e);padding:80px 40px;text-align:center;margin-top:0}
+    .cta-section h2{font-size:clamp(24px,3vw,36px);font-weight:800;color:white;margin-bottom:14px;letter-spacing:-0.5px}
+    .cta-section p{font-size:17px;color:rgba(255,255,255,0.55);margin-bottom:32px;max-width:500px;margin-left:auto;margin-right:auto}
+    .cta-btn{display:inline-flex;align-items:center;gap:8px;background:linear-gradient(135deg,#4f46e5,#7c3aed);color:white;padding:15px 30px;border-radius:12px;font-weight:700;font-size:16px;text-decoration:none;transition:all .2s}
+    .cta-btn:hover{transform:translateY(-2px);box-shadow:0 12px 28px rgba(79,70,229,0.4)}
+    .cta-sub{font-size:13px;color:rgba(255,255,255,0.35);margin-top:14px}
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="nav-logo">UnboxProof</a>
+  <div class="nav-right">
+    <a href="/" class="nav-back">← Accueil</a>
+    <a href="/company/register.html" class="nav-cta">Essayer gratuitement</a>
+  </div>
+</nav>
+
+<div class="page-hero">
+  <div class="page-hero-tag">📊 Études de cas</div>
+  <h1>Des résultats <span>concrets et mesurés</span></h1>
+  <p>Comment des e-commerçants ont transformé leur gestion des retours et récupéré des milliers d'euros par mois.</p>
+</div>
+
+<!-- GLOBAL STATS -->
+<div class="global-stats">
+  <div class="global-stats-inner">
+    <div>
+      <div class="gs-num" style="color:#4f46e5">-78%</div>
+      <div class="gs-label">de litiges frauduleux en moyenne sur 90 jours</div>
+    </div>
+    <div>
+      <div class="gs-num" style="color:#059669">+4.1%</div>
+      <div class="gs-label">de CA récupéré chaque mois (fraudes stoppées)</div>
+    </div>
+    <div>
+      <div class="gs-num" style="color:#d97706">12j</div>
+      <div class="gs-label">délai moyen pour rentabiliser l'abonnement</div>
+    </div>
+    <div>
+      <div class="gs-num" style="color:#dc2626">97%</div>
+      <div class="gs-label">des tentatives de fraude détectées par l'IA</div>
+    </div>
+  </div>
+</div>
+
+<div class="layout">
+
+  <!-- CASE STUDY 1 : SNEAKERS / MODE -->
+  <div class="case-study">
+    <div class="cs-header">
+      <div class="cs-company">
+        <div class="cs-logo" style="background:linear-gradient(135deg,#4f46e5,#7c3aed)">S</div>
+        <div>
+          <div class="cs-company-name">SoleKick <span class="cs-sector" style="background:#ede9fe;color:#4f46e5">👟 Mode / Sneakers</span></div>
+          <div class="cs-company-meta">Boutique Shopify • 2 100 commandes/mois • CA : 380 000 €/mois</div>
+        </div>
+      </div>
+      <div class="cs-kpis">
+        <div class="cs-kpi">
+          <div class="cs-kpi-num" style="color:#059669">-91%</div>
+          <div class="cs-kpi-label">fraudes stoppées</div>
+        </div>
+        <div class="cs-kpi">
+          <div class="cs-kpi-num" style="color:#4f46e5">€5 400</div>
+          <div class="cs-kpi-label">économisés/mois</div>
+        </div>
+        <div class="cs-kpi">
+          <div class="cs-kpi-num" style="color:#d97706">8j</div>
+          <div class="cs-kpi-label">ROI atteint</div>
+        </div>
+      </div>
+    </div>
+    <div class="cs-body">
+      <div class="cs-grid">
+        <div>
+          <div class="cs-section-title">Le problème</div>
+          <p class="cs-text">SoleKick vendait des sneakers haut de gamme (Nike, Adidas, Jordan) avec un panier moyen de 180€. Chaque mois, l'équipe traitait 15 à 20 demandes de remboursement pour "produit non conforme" ou "boîte vide reçue".</p>
+          <br>
+          <p class="cs-text">Sans preuve, ils remboursaient systématiquement pour éviter les litiges Shopify. Estimation : <strong>€5 200 à €6 000 de pertes mensuelles</strong> sur des réclamations qu'ils ne pouvaient pas contester.</p>
+          <ul class="cs-list" style="margin-top:16px">
+            <li>15-20 demandes frauduleuses estimées par mois</li>
+            <li>Aucune vidéo, aucune preuve photographique à l'ouverture</li>
+            <li>Support client submergé, 2h/semaine perdues sur les litiges</li>
+            <li>Taux de chargeback Stripe en hausse : risque de suspension</li>
+          </ul>
+        </div>
+        <div>
+          <div class="cs-section-title">La solution</div>
+          <p class="cs-text">Intégration UnboxProof en 2 jours via l'API Shopify. Dès l'expédition, chaque client reçoit automatiquement son code unique et son lien d'unboxing personnalisé.</p>
+          <br>
+          <p class="cs-text">La page d'unboxing affiche le nom de la boutique, le produit commandé et les instructions claires. Le taux de réalisation de la vidéo atteint <strong>68% dès la première semaine</strong>.</p>
+          <ul class="cs-list" style="margin-top:16px">
+            <li>Webhook Shopify → API UnboxProof à chaque expédition</li>
+            <li>Email client automatique avec code unique</li>
+            <li>Dashboard centralisant tous les unboxings à réviser</li>
+            <li>Réponse automatique aux litiges Stripe avec lien vidéo</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="cs-timeline">
+        <div class="cs-timeline-title">Chronologie des résultats</div>
+        <div class="timeline-row">
+          <div class="timeline-week">Sem. 1</div>
+          <div class="timeline-text">Intégration + première semaine live. 68% des clients filment leur unboxing.</div>
+          <div class="timeline-result">0 fraude détectée</div>
+        </div>
+        <div class="timeline-row">
+          <div class="timeline-week">Sem. 2</div>
+          <div class="timeline-text">3 tentatives de remboursement frauduleux bloquées grâce aux vidéos.</div>
+          <div class="timeline-result">+€540 récupérés</div>
+        </div>
+        <div class="timeline-row">
+          <div class="timeline-week">Sem. 3-4</div>
+          <div class="timeline-text">Le bruit court. Les réclamations frauduleuses chutent de 91% vs mois précédent.</div>
+          <div class="timeline-result">+€4 860 récupérés</div>
+        </div>
+        <div class="timeline-row">
+          <div class="timeline-week">Mois 2</div>
+          <div class="timeline-text">Stabilisation. 1-2 tentatives/mois, toutes bloquées. Support client libéré.</div>
+          <div class="timeline-result">€5 400/mois économisés</div>
+        </div>
+      </div>
+
+      <div class="cs-quote">
+        <p class="cs-quote-text">"En 8 jours, les économies avaient déjà couvert l'abonnement annuel. Ce que je n'avais pas prévu, c'est l'effet dissuasif immédiat : les fraudeurs arrêtent d'essayer dès qu'ils savent qu'ils vont être filmés. On est passé de 18 remboursements frauduleux à 2 en un mois."</p>
+        <div class="cs-quote-author">Romain C.</div>
+        <div class="cs-quote-role">Fondateur & CEO, SoleKick</div>
+      </div>
+    </div>
+    <div class="cs-footer">
+      <div class="cs-tags">
+        <span class="cs-tag">Shopify</span>
+        <span class="cs-tag">Mode</span>
+        <span class="cs-tag">Panier moyen 180€</span>
+        <span class="cs-tag">Plan Pro</span>
+      </div>
+      <a href="/company/register.html" style="background:linear-gradient(135deg,#4f46e5,#7c3aed);color:white;padding:9px 20px;border-radius:8px;font-size:13px;font-weight:700;text-decoration:none">Obtenir les mêmes résultats →</a>
+    </div>
+  </div>
+
+  <!-- CASE STUDY 2 : ÉLECTRONIQUE -->
+  <div class="case-study">
+    <div class="cs-header">
+      <div class="cs-company">
+        <div class="cs-logo" style="background:linear-gradient(135deg,#0284c7,#0ea5e9)">R</div>
+        <div>
+          <div class="cs-company-name">RenovaElec <span class="cs-sector" style="background:#e0f2fe;color:#0284c7">💻 Électronique reconditionné</span></div>
+          <div class="cs-company-meta">WooCommerce • 780 commandes/mois • CA : 520 000 €/mois</div>
+        </div>
+      </div>
+      <div class="cs-kpis">
+        <div class="cs-kpi">
+          <div class="cs-kpi-num" style="color:#059669">-84%</div>
+          <div class="cs-kpi-label">litiges "produit défaillant"</div>
+        </div>
+        <div class="cs-kpi">
+          <div class="cs-kpi-num" style="color:#4f46e5">€8 900</div>
+          <div class="cs-kpi-label">économisés/mois</div>
+        </div>
+        <div class="cs-kpi">
+          <div class="cs-kpi-num" style="color:#d97706">14j</div>
+          <div class="cs-kpi-label">ROI atteint</div>
+        </div>
+      </div>
+    </div>
+    <div class="cs-body">
+      <div class="cs-grid">
+        <div>
+          <div class="cs-section-title">Le problème</div>
+          <p class="cs-text">RenovaElec vend des MacBook, iPhone et iPad reconditionnés. Le problème récurrent : des clients recevaient le produit en bon état, puis réclamaient "écran rayé à la livraison" ou "batterie défaillante" pour obtenir un échange ou remboursement.</p>
+          <br>
+          <p class="cs-text">Avec un panier moyen de 670€, chaque litige coûtait cher. <strong>12 à 14 remboursements contestables par mois</strong>, souvent impossibles à refuser légalement sans preuve.</p>
+          <ul class="cs-list" style="margin-top:16px">
+            <li>Panier moyen élevé = fraudes à fort impact financier</li>
+            <li>Impossible de prouver l'état à la livraison sans vidéo</li>
+            <li>SAV saturé : 3h/semaine sur des litiges non justifiés</li>
+            <li>Réputation sur Trustpilot affectée par de faux avis négatifs</li>
+          </ul>
+        </div>
+        <div>
+          <div class="cs-section-title">La solution</div>
+          <p class="cs-text">Intégration via plugin WooCommerce en 3 heures. Spécificité : RenovaElec a configuré des instructions vidéo personnalisées — "montrez l'écran allumé avec le code, puis naviguez 30 secondes".</p>
+          <br>
+          <p class="cs-text">L'IA UnboxProof analyse la vidéo et signale automatiquement si l'écran montre des anomalies visibles. <strong>Score de confiance moyen : 94%</strong> sur leurs commandes.</p>
+          <ul class="cs-list" style="margin-top:16px">
+            <li>Instructions unboxing spécifiques selon le type de produit</li>
+            <li>Analyse IA de l'état visuel de l'écran et de la boîte</li>
+            <li>Webhook vers leur CRM pour auto-fermer les litiges validés</li>
+            <li>Preuve exportable en PDF pour les litiges PayPal/Stripe</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="cs-quote">
+        <p class="cs-quote-text">"On vendait des MacBook reconditionnés à 800€ et on se faisait avoir régulièrement. La vidéo a tout changé. En 3 semaines, on a bloqué 11 tentatives. Ce que j'apprécies le plus : quand un vrai problème arrive, on le résout immédiatement grâce à la vidéo. Ça a même amélioré notre Trustpilot."</p>
+        <div class="cs-quote-author">Alexandre M.</div>
+        <div class="cs-quote-role">Directeur des opérations, RenovaElec</div>
+      </div>
+    </div>
+    <div class="cs-footer">
+      <div class="cs-tags">
+        <span class="cs-tag">WooCommerce</span>
+        <span class="cs-tag">Électronique</span>
+        <span class="cs-tag">Panier moyen 670€</span>
+        <span class="cs-tag">Plan Pro</span>
+      </div>
+      <a href="/company/register.html" style="background:linear-gradient(135deg,#4f46e5,#7c3aed);color:white;padding:9px 20px;border-radius:8px;font-size:13px;font-weight:700;text-decoration:none">Obtenir les mêmes résultats →</a>
+    </div>
+  </div>
+
+  <!-- CASE STUDY 3 : MARKETPLACE -->
+  <div class="case-study">
+    <div class="cs-header">
+      <div class="cs-company">
+        <div class="cs-logo" style="background:linear-gradient(135deg,#059669,#34d399)">V</div>
+        <div>
+          <div class="cs-company-name">VinylVault <span class="cs-sector" style="background:#dcfce7;color:#059669">🎵 Marketplace C2C</span></div>
+          <div class="cs-company-meta">API custom • 3 400 commandes/mois • Vinyles & collectors</div>
+        </div>
+      </div>
+      <div class="cs-kpis">
+        <div class="cs-kpi">
+          <div class="cs-kpi-num" style="color:#059669">-76%</div>
+          <div class="cs-kpi-label">litiges entre membres</div>
+        </div>
+        <div class="cs-kpi">
+          <div class="cs-kpi-num" style="color:#4f46e5">€12 k</div>
+          <div class="cs-kpi-label">économisés/mois</div>
+        </div>
+        <div class="cs-kpi">
+          <div class="cs-kpi-num" style="color:#d97706">6j</div>
+          <div class="cs-kpi-label">ROI atteint</div>
+        </div>
+      </div>
+    </div>
+    <div class="cs-body">
+      <div class="cs-grid">
+        <div>
+          <div class="cs-section-title">Le problème</div>
+          <p class="cs-text">VinylVault est une marketplace entre collectionneurs. Le modèle C2C crée un défi structurel : quand un acheteur dit "le vinyle est rayé" et le vendeur répond "je l'ai expédié parfait", la plateforme doit trancher — sans preuve.</p>
+          <br>
+          <p class="cs-text">Résultat : l'équipe de modération passait <strong>22h/semaine à arbitrer des litiges</strong> sans jamais pouvoir être certaine de la vérité. Le risque de mauvaise décision était constant.</p>
+          <ul class="cs-list" style="margin-top:16px">
+            <li>Litiges insurmontables : la parole de l'un contre l'autre</li>
+            <li>22h/semaine de modération humaine pour arbitrer</li>
+            <li>Vendeurs légitimes frustrés par des remboursements injustes</li>
+            <li>Acheteurs malhonnêtes récidivant sans conséquences</li>
+          </ul>
+        </div>
+        <div>
+          <div class="cs-section-title">La solution</div>
+          <p class="cs-text">VinylVault a intégré UnboxProof via API REST. Chaque transaction génère automatiquement un code unique. Le vendeur le communique à l'acheteur, qui filme l'ouverture de la pochette.</p>
+          <br>
+          <p class="cs-text">En cas de litige, la modération dispose immédiatement de la vidéo. <strong>92% des litiges sont résolus en moins de 2 heures</strong> avec la vidéo comme preuve.</p>
+          <ul class="cs-list" style="margin-top:16px">
+            <li>Zéro arbitrage à l'aveugle : la vidéo dit la vérité</li>
+            <li>Temps de modération réduit de 22h à 3h/semaine</li>
+            <li>Les fraudeurs récidivistes identifiés et bannis</li>
+            <li>Confiance de la communauté renforcée — +18% de transactions</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="cs-quote">
+        <p class="cs-quote-text">"Ce qu'UnboxProof a changé, c'est pas juste les fraudes — c'est l'ambiance de notre plateforme. Avant, les vendeurs avaient peur de se faire avoir. Maintenant ils vendent en confiance. Nos avis sur l'App Store sont passés de 3.8 à 4.6 étoiles en 3 mois."</p>
+        <div class="cs-quote-author">Julie K.</div>
+        <div class="cs-quote-role">CPO, VinylVault</div>
+      </div>
+    </div>
+    <div class="cs-footer">
+      <div class="cs-tags">
+        <span class="cs-tag">API REST</span>
+        <span class="cs-tag">Marketplace C2C</span>
+        <span class="cs-tag">Collectionneurs</span>
+        <span class="cs-tag">Plan Enterprise</span>
+      </div>
+      <a href="/company/register.html" style="background:linear-gradient(135deg,#4f46e5,#7c3aed);color:white;padding:9px 20px;border-radius:8px;font-size:13px;font-weight:700;text-decoration:none">Obtenir les mêmes résultats →</a>
+    </div>
+  </div>
+
+</div>
+
+<!-- CTA -->
+<div class="cta-section">
+  <h2>Votre boutique peut avoir<br>les mêmes résultats</h2>
+  <p>Testez gratuitement jusqu'à 100 commandes/mois. Aucune carte bancaire requise.</p>
+  <a href="/company/register.html" class="cta-btn">Commencer gratuitement →</a>
+  <div class="cta-sub">Intégration en 5 minutes · Résultats dès la première semaine</div>
+</div>
+
+</body>
+</html>
