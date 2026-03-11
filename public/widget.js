@@ -1,6 +1,6 @@
 (function() {
   'use strict';
-  const SAFETRADE_URL = 'http://localhost:3000';
+  const UNBOXPROOF_URL = window.location.origin;
 
   const style = document.createElement('style');
   style.textContent = `

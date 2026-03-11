@@ -224,13 +224,13 @@
 
         <!-- Photos -->
         <div class="form-section">
-          <div class="form-section-title">📸 Photos supplémentaires <span style="font-size:12px;font-weight:400;color:#94a3b8">(optionnel mais recommandé)</span></div>
-          <div class="form-section-sub">Prenez en photo le produit reçu, le code, et tout problème éventuel. Plus vous avez de preuves, mieux c'est.</div>
+          <div class="form-section-title">📸 Photos / vidéos supplémentaires <span style="font-size:12px;font-weight:400;color:#94a3b8">(optionnel mais recommandé)</span></div>
+          <div class="form-section-sub">Prenez en photo le produit reçu, le code, et tout problème éventuel. Vous pouvez aussi ajouter des vidéos complémentaires.</div>
           <div class="upload-zone" id="photos-zone">
-            <input type="file" name="photos" accept="image/*" multiple id="photos-input" onchange="onPhotosChange(this)">
+            <input type="file" name="photos" accept="image/*,video/*" multiple id="photos-input" onchange="onPhotosChange(this)">
             <div class="upload-icon">📷</div>
-            <div class="upload-title">Sélectionner des photos</div>
-            <div class="upload-sub">Jusqu'à 10 photos — JPG, PNG, WEBP</div>
+            <div class="upload-title">Sélectionner des photos ou vidéos</div>
+            <div class="upload-sub">Jusqu'à 10 fichiers — JPG, PNG, MP4, MOV…</div>
             <div class="upload-success" id="photos-count"></div>
           </div>
         </div>
