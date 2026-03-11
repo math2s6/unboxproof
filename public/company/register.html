@@ -183,7 +183,7 @@
     </div>
     <div class="api-key-value" id="api-key-display"></div>
     <button class="btn-copy" onclick="copyKey()">Copier la clé API</button>
-    <button class="btn-dashboard" onclick="window.location.href='/company/'">Accéder au tableau de bord →</button>
+    <button class="btn-dashboard" onclick="window.location.href='/company/onboarding.html'">Démarrer l'intégration →</button>
   </div>
 </div>
 
@@ -216,6 +216,7 @@
       // Store token
       localStorage.setItem('company_token', data.token);
       localStorage.setItem('company_data', JSON.stringify(data.company));
+      localStorage.setItem('company_api_key', data.api_key);
 
       // Show API key
       generatedKey = data.api_key;

@@ -3,6 +3,7 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const db = require('../db');
+const { sendWelcomeEmail } = require('../services/emailService');
 require('dotenv').config();
 
 function signCompanyToken(id) {
@@ -22,6 +23,7 @@ router.post('/register', async (req, res, next) => {
 
     const company = await db.get('SELECT id, name, email, plan, industry FROM companies WHERE id = ?', r.lastInsertRowid);
     res.status(201).json({ token: signCompanyToken(company.id), company, api_key: key, message: 'Sauvegardez votre API key — elle ne sera plus affichée.' });
+    sendWelcomeEmail(email, name, key).catch(() => {});
   } catch (e) {
     if (e.message.includes('UNIQUE')) return res.status(409).json({ error: 'Email déjà utilisé' });
     next(e);

@@ -615,6 +615,10 @@
       <div class="section-tag">Tarifs</div>
       <h2 class="section-title">Simple et transparent</h2>
       <p class="section-sub">Commencez gratuitement. Évoluez selon vos besoins. Aucune surprise sur votre facture.</p>
+      <div style="display:inline-flex;align-items:center;gap:12px;margin-top:24px;background:#f1f5f9;padding:6px;border-radius:12px">
+        <button onclick="setPricing('monthly')" id="btn-monthly" style="padding:8px 20px;border-radius:8px;border:none;font-size:14px;font-weight:600;cursor:pointer;background:#4f46e5;color:white;transition:all .2s">Mensuel</button>
+        <button onclick="setPricing('annual')" id="btn-annual" style="padding:8px 20px;border-radius:8px;border:none;font-size:14px;font-weight:600;cursor:pointer;background:transparent;color:#64748b;transition:all .2s">Annuel <span style="background:#dcfce7;color:#059669;font-size:11px;padding:2px 6px;border-radius:4px;margin-left:4px">-20%</span></button>
+      </div>
     </div>
     <div class="pricing-grid">
       <div class="pricing-card fade-in">
@@ -633,8 +637,8 @@
       <div class="pricing-card featured fade-in">
         <div class="pricing-badge">⭐ Plus populaire</div>
         <div class="pricing-plan">Pro</div>
-        <div class="pricing-price"><sup>€</sup>99<span>/mois</span></div>
-        <div class="pricing-desc">Pour les marques en croissance</div>
+        <div class="pricing-price"><sup>€</sup><span id="pro-price">99</span><span id="pro-period">/mois</span></div>
+        <div class="pricing-desc" id="pro-desc">Pour les marques en croissance</div>
         <ul class="pricing-features">
           <li>1 000 commandes / mois</li>
           <li>API REST + Webhooks</li>
@@ -872,6 +876,18 @@ function toggleFaq(btn) {
   const isOpen = answer.classList.contains('open');
   document.querySelectorAll('.faq-answer.open').forEach(a => { a.classList.remove('open'); a.previousElementSibling.classList.remove('open'); });
   if (!isOpen) { answer.classList.add('open'); btn.classList.add('open'); }
+}
+
+// Pricing toggle
+function setPricing(mode) {
+  const isAnnual = mode === 'annual';
+  document.getElementById('btn-monthly').style.background = isAnnual ? 'transparent' : '#4f46e5';
+  document.getElementById('btn-monthly').style.color = isAnnual ? '#64748b' : 'white';
+  document.getElementById('btn-annual').style.background = isAnnual ? '#4f46e5' : 'transparent';
+  document.getElementById('btn-annual').style.color = isAnnual ? 'white' : '#64748b';
+  document.getElementById('pro-price').textContent = isAnnual ? '79' : '99';
+  document.getElementById('pro-period').textContent = isAnnual ? '/mois' : '/mois';
+  document.getElementById('pro-desc').textContent = isAnnual ? 'Facturé 949€/an — économisez 239€' : 'Pour les marques en croissance';
 }
 
 // Legacy waitlist form (kept for backwards compat)
