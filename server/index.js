@@ -47,6 +47,7 @@ app.use('/api/demo', require('./routes/demo'));
 app.use('/api/contact', require('./routes/contact'));
 app.use('/api/waitlist', require('./routes/waitlist'));
 app.use('/api/company/export', require('./routes/b2b-export'));
+app.use('/api/admin/b2b', require('./routes/admin-b2b'));
 
 // Redirect root to B2B landing page
 app.get('/', (req, res) => {

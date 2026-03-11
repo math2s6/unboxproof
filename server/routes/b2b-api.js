@@ -4,7 +4,7 @@ const { requireApiKey } = require('../middleware/apiKeyAuth');
 const { generateVerificationCode } = require('../services/tokenService');
 const { unboxingUpload } = require('../middleware/upload');
 const { analyzeUnboxing } = require('../services/aiService');
-const { sendUnboxingInvite, sendOrderConfirmation } = require('../services/emailService');
+const { sendUnboxingInvite, sendOrderConfirmation, sendEmail } = require('../services/emailService');
 const { sendWebhook } = require('../services/webhookService');
 
 // Public customer-facing routes (no API key needed)
@@ -37,6 +37,41 @@ router.post('/customer/:orderId/submit',
       if (!conditionOk) await db.run('UPDATE companies SET total_fraud_prevented = total_fraud_prevented + 1 WHERE id = ?', order.company_id);
 
       sendWebhook(order.company_id, 'unboxing.submitted', { order_id: order.id, ai_confidence: analysis.confidence, recommendation: analysis.recommendation }).catch(console.error);
+
+      // Notify merchant by email
+      db.get('SELECT name, email FROM companies WHERE id = ?', order.company_id).then(company => {
+        if (!company?.email) return;
+        const appUrl = process.env.APP_URL || 'https://unboxproof.io';
+        const dashUrl = `${appUrl}/company/?tab=unboxings`;
+        const statusColor = analysis.recommendation === 'approve' ? '#059669' : analysis.recommendation === 'dispute' ? '#dc2626' : '#d97706';
+        const statusLabel = analysis.recommendation === 'approve' ? '✅ Validé automatiquement' : analysis.recommendation === 'dispute' ? '⚠️ Problème détecté — action requise' : '👁 À réviser manuellement';
+        const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>
+body{font-family:-apple-system,sans-serif;background:#f1f5f9;padding:24px}
+.c{max-width:560px;margin:0 auto;background:white;border-radius:16px;overflow:hidden;box-shadow:0 4px 12px rgba(0,0,0,.08)}
+.h{background:linear-gradient(135deg,#4f46e5,#7c3aed);padding:28px 32px;text-align:center}
+.h h1{color:white;font-size:18px;margin:0 0 4px}.h p{color:rgba(255,255,255,.75);font-size:13px;margin:0}
+.b{padding:28px 32px}
+.row{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #f1f5f9;font-size:14px}
+.row:last-child{border-bottom:none}.lbl{color:#64748b}.val{font-weight:600;color:#0f172a;text-align:right}
+.ai-box{border-radius:10px;padding:14px 18px;margin:16px 0;border:1px solid ${statusColor}30;background:${statusColor}08;font-size:14px;font-weight:600;color:${statusColor};text-align:center}
+.score{font-size:32px;font-weight:900;color:${statusColor}}
+.footer{padding:16px 32px;border-top:1px solid #e2e8f0;text-align:center;font-size:12px;color:#94a3b8}
+</style></head><body><div class="c">
+<div class="h"><h1>🎬 Nouvel unboxing soumis</h1><p>${company.name}</p></div>
+<div class="b">
+<div class="row"><span class="lbl">Commande</span><span class="val">#${order.external_order_id || order.id}</span></div>
+<div class="row"><span class="lbl">Produit</span><span class="val">${order.product_name}</span></div>
+<div class="row"><span class="lbl">Client</span><span class="val">${order.customer_email}</span></div>
+<div class="row"><span class="lbl">Vidéo</span><span class="val">${videoFile ? '✓ Présente' : '✗ Absente'}</span></div>
+<div class="row"><span class="lbl">Photos</span><span class="val">${photoFiles.length} fichier(s)</span></div>
+<div class="ai-box"><div class="score">${Math.round(analysis.confidence * 100)}%</div>${statusLabel}</div>
+<p style="text-align:center"><a href="${dashUrl}" style="display:inline-block;background:linear-gradient(135deg,#4f46e5,#7c3aed);color:white;padding:12px 24px;border-radius:10px;font-weight:700;font-size:14px;text-decoration:none">Voir l'unboxing →</a></p>
+</div>
+<div class="footer">© 2025 UnboxProof — <a href="${appUrl}" style="color:#4f46e5">unboxproof.io</a></div>
+</div></body></html>`;
+        sendEmail(company.email, `🎬 Unboxing soumis — ${order.product_name} (${Math.round(analysis.confidence * 100)}% confiance)`, html).catch(() => {});
+      }).catch(() => {});
+
       res.json({ success: true, message: "Unboxing soumis avec succès !", ai_confidence: analysis.confidence, ai_label: analysis.label, ai_recommendation: analysis.recommendation, flags: analysis.flags, positives: analysis.positives });
     } catch (e) { next(e); }
   }

@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin B2B — UnboxProof</title>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#0f0f1a;color:#e2e8f0;min-height:100vh}
+
+    /* TOPBAR */
+    .topbar{background:#1a1a2e;border-bottom:1px solid rgba(255,255,255,0.07);padding:0 24px;height:56px;display:flex;align-items:center;justify-content:space-between;position:fixed;top:0;left:0;right:0;z-index:100}
+    .topbar-logo{font-size:16px;font-weight:800;color:white;letter-spacing:-0.5px;display:flex;align-items:center;gap:8px}
+    .topbar-badge{background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.3);color:#f87171;font-size:11px;font-weight:700;padding:2px 8px;border-radius:100px}
+    .topbar-right{display:flex;align-items:center;gap:8px}
+    .secret-input{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:white;padding:7px 12px;border-radius:8px;font-size:13px;width:220px;outline:none}
+    .secret-input:focus{border-color:rgba(79,70,229,0.5)}
+    .btn-auth{background:linear-gradient(135deg,#4f46e5,#7c3aed);color:white;border:none;padding:7px 16px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer}
+
+    /* LAYOUT */
+    .layout{display:flex;padding-top:56px;min-height:100vh}
+    .sidebar{width:200px;background:#13131f;border-right:1px solid rgba(255,255,255,0.06);padding:16px 0;position:fixed;top:56px;bottom:0;overflow-y:auto}
+    .nav-group{padding:16px 12px 8px;font-size:11px;font-weight:700;color:rgba(255,255,255,0.25);text-transform:uppercase;letter-spacing:.08em}
+    .nav-item{display:flex;align-items:center;gap:10px;padding:9px 16px;margin:2px 8px;border-radius:8px;cursor:pointer;font-size:13px;color:rgba(255,255,255,0.55);transition:.15s}
+    .nav-item:hover{background:rgba(255,255,255,0.06);color:white}
+    .nav-item.active{background:rgba(79,70,229,0.2);color:#a5b4fc}
+
+    .main{margin-left:200px;padding:24px;flex:1}
+
+    /* CARDS */
+    .page-title{font-size:22px;font-weight:800;color:white;margin-bottom:4px;letter-spacing:-0.5px}
+    .page-sub{font-size:13px;color:rgba(255,255,255,0.35);margin-bottom:24px}
+
+    .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:24px}
+    .stat-card{background:#1a1a2e;border:1px solid rgba(255,255,255,0.07);border-radius:12px;padding:18px}
+    .stat-val{font-size:28px;font-weight:800;color:white;line-height:1}
+    .stat-label{font-size:12px;color:rgba(255,255,255,0.4);margin-top:4px}
+    .stat-pill{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:600;padding:2px 8px;border-radius:100px;margin-top:8px}
+
+    .card{background:#1a1a2e;border:1px solid rgba(255,255,255,0.07);border-radius:14px;overflow:hidden;margin-bottom:16px}
+    .card-header{padding:16px 20px;border-bottom:1px solid rgba(255,255,255,0.06);display:flex;align-items:center;justify-content:space-between}
+    .card-title{font-size:14px;font-weight:700;color:white}
+    .card-body{padding:0}
+
+    /* TABLE */
+    table{width:100%;border-collapse:collapse;font-size:13px}
+    th{text-align:left;padding:10px 20px;font-size:11px;font-weight:700;color:rgba(255,255,255,0.3);text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid rgba(255,255,255,0.06);background:#13131f}
+    td{padding:12px 20px;border-bottom:1px solid rgba(255,255,255,0.04);color:rgba(255,255,255,0.75)}
+    tr:last-child td{border-bottom:none}
+    tr:hover td{background:rgba(255,255,255,0.02)}
+
+    .badge{display:inline-flex;align-items:center;padding:3px 10px;border-radius:100px;font-size:11px;font-weight:600}
+    .badge-green{background:rgba(5,150,105,0.15);color:#34d399}
+    .badge-purple{background:rgba(79,70,229,0.2);color:#a5b4fc}
+    .badge-orange{background:rgba(217,119,6,0.15);color:#fbbf24}
+    .badge-red{background:rgba(220,38,38,0.15);color:#f87171}
+    .badge-gray{background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.4)}
+
+    .btn{padding:6px 12px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;border:none;transition:.15s}
+    .btn-sm-primary{background:rgba(79,70,229,0.2);color:#a5b4fc;border:1px solid rgba(79,70,229,0.3)}
+    .btn-sm-primary:hover{background:rgba(79,70,229,0.35)}
+    .btn-sm-red{background:rgba(220,38,38,0.15);color:#f87171;border:1px solid rgba(220,38,38,0.3)}
+    .btn-sm-red:hover{background:rgba(220,38,38,0.25)}
+    .btn-sm-green{background:rgba(5,150,105,0.15);color:#34d399;border:1px solid rgba(5,150,105,0.3)}
+    .btn-sm-green:hover{background:rgba(5,150,105,0.25)}
+
+    .filter-row{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+    .filter-btn{padding:6px 14px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.55);transition:.15s}
+    .filter-btn:hover,.filter-btn.active{background:rgba(79,70,229,0.2);border-color:rgba(79,70,229,0.4);color:#a5b4fc}
+
+    .toast{position:fixed;bottom:20px;right:20px;background:#1e293b;border:1px solid rgba(255,255,255,0.1);color:white;padding:12px 18px;border-radius:10px;font-size:14px;z-index:9999;transform:translateY(100px);opacity:0;transition:.3s}
+    .toast.show{transform:translateY(0);opacity:1}
+    .loading{color:rgba(255,255,255,0.3);font-size:13px;padding:20px;text-align:center}
+
+    .section{display:none}.section.active{display:block}
+    .auth-wall{text-align:center;padding:60px 20px;color:rgba(255,255,255,0.35);font-size:15px}
+    .auth-wall h2{font-size:20px;font-weight:700;color:white;margin-bottom:8px}
+  </style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-logo">
+    UnboxProof <span class="topbar-badge">ADMIN</span>
+  </div>
+  <div class="topbar-right">
+    <input class="secret-input" type="password" id="secretInput" placeholder="Clé admin (ADMIN_SECRET)" onkeydown="if(event.key==='Enter')authenticate()">
+    <button class="btn-auth" onclick="authenticate()">Accéder</button>
+  </div>
+</div>
+
+<div class="layout">
+  <div class="sidebar">
+    <div class="nav-group">Plateforme</div>
+    <div class="nav-item active" id="nav-dashboard" onclick="showSection('dashboard',this)">📊 Dashboard</div>
+    <div class="nav-item" id="nav-companies" onclick="showSection('companies',this)">🏢 Entreprises</div>
+    <div class="nav-item" id="nav-orders" onclick="showSection('orders',this)">📦 Commandes</div>
+  </div>
+
+  <div class="main" id="mainContent">
+    <div class="auth-wall">
+      <h2>🔐 Accès restreint</h2>
+      <p>Entrez votre clé ADMIN_SECRET pour accéder au panneau d'administration.</p>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+let adminSecret = '';
+let currentSection = 'dashboard';
+
+function authenticate() {
+  adminSecret = document.getElementById('secretInput').value.trim();
+  if (!adminSecret) return;
+  showSection('dashboard', document.getElementById('nav-dashboard'));
+}
+
+async function api(path, opts = {}) {
+  const res = await fetch('/api/admin/b2b' + path, {
+    ...opts,
+    headers: { 'x-admin-secret': adminSecret, 'Content-Type': 'application/json', ...(opts.headers || {}) }
+  });
+  if (res.status === 401) {
+    toast('❌ Clé admin invalide', 'red');
+    return null;
+  }
+  return res.json();
+}
+
+function toast(msg, type = 'green') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.style.borderColor = type === 'red' ? 'rgba(239,68,68,0.3)' : 'rgba(79,70,229,0.3)';
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 3000);
+}
+
+function showSection(name, el) {
+  currentSection = name;
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  if (el) el.classList.add('active');
+  if (name === 'dashboard') loadDashboard();
+  else if (name === 'companies') loadCompanies();
+  else if (name === 'orders') loadOrders();
+}
+
+async function loadDashboard() {
+  const data = await api('/stats');
+  if (!data) return;
+  const planMap = {};
+  (data.plans || []).forEach(p => { planMap[p.plan] = p.c; });
+  document.getElementById('mainContent').innerHTML = `
+    <div class="page-title">Dashboard</div>
+    <div class="page-sub">Vue d'ensemble de la plateforme UnboxProof</div>
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-val">${data.companies}</div>
+        <div class="stat-label">Entreprises actives</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val">${data.orders}</div>
+        <div class="stat-label">Commandes totales</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val">${data.unboxings}</div>
+        <div class="stat-label">Unboxings soumis</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val">${data.fraud_prevented}</div>
+        <div class="stat-label">Fraudes évitées</div>
+      </div>
+      <div class="stat-card" style="border-color:rgba(251,191,36,0.2)">
+        <div class="stat-val" style="color:#fbbf24">${data.to_review}</div>
+        <div class="stat-label">À réviser</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-title">Répartition par plan</div></div>
+      <div style="padding:20px;display:flex;gap:16px;flex-wrap:wrap">
+        <div style="flex:1;min-width:120px;text-align:center;background:#13131f;border-radius:10px;padding:16px">
+          <div style="font-size:24px;font-weight:800;color:#a5b4fc">${planMap['starter'] || 0}</div>
+          <div style="font-size:12px;color:rgba(255,255,255,0.35);margin-top:4px">Starter (gratuit)</div>
+        </div>
+        <div style="flex:1;min-width:120px;text-align:center;background:#13131f;border-radius:10px;padding:16px">
+          <div style="font-size:24px;font-weight:800;color:#34d399">${planMap['pro'] || 0}</div>
+          <div style="font-size:12px;color:rgba(255,255,255,0.35);margin-top:4px">Pro</div>
+        </div>
+        <div style="flex:1;min-width:120px;text-align:center;background:#13131f;border-radius:10px;padding:16px">
+          <div style="font-size:24px;font-weight:800;color:#fbbf24">${planMap['enterprise'] || 0}</div>
+          <div style="font-size:12px;color:rgba(255,255,255,0.35);margin-top:4px">Enterprise</div>
+        </div>
+      </div>
+    </div>`;
+}
+
+async function loadCompanies() {
+  document.getElementById('mainContent').innerHTML = '<div class="loading">Chargement...</div>';
+  const companies = await api('/companies');
+  if (!companies) return;
+
+  const planBadge = p => {
+    if (p === 'enterprise') return '<span class="badge badge-orange">Enterprise</span>';
+    if (p === 'pro') return '<span class="badge badge-green">Pro</span>';
+    return '<span class="badge badge-gray">Starter</span>';
+  };
+
+  document.getElementById('mainContent').innerHTML = `
+    <div class="page-title">Entreprises</div>
+    <div class="page-sub">${companies.length} entreprise(s) enregistrée(s)</div>
+    <div class="card">
+      <div class="card-body">
+        <table>
+          <thead><tr>
+            <th>Entreprise</th>
+            <th>Email</th>
+            <th>Plan</th>
+            <th>Commandes</th>
+            <th>Fraudes évitées</th>
+            <th>Statut</th>
+            <th>Actions</th>
+          </tr></thead>
+          <tbody>
+            ${companies.map(c => `
+              <tr>
+                <td style="font-weight:600;color:white">${c.name}</td>
+                <td style="color:rgba(255,255,255,0.5)">${c.email}</td>
+                <td>${planBadge(c.plan)}</td>
+                <td>${c.order_count || 0}${c.pending_review > 0 ? ` <span class="badge badge-orange" style="margin-left:4px">+${c.pending_review} à réviser</span>` : ''}</td>
+                <td>${c.total_fraud_prevented || 0}</td>
+                <td>${c.is_active ? '<span class="badge badge-green">Actif</span>' : '<span class="badge badge-red">Suspendu</span>'}</td>
+                <td style="display:flex;gap:6px;flex-wrap:wrap">
+                  <select onchange="changePlan(${c.id},this.value)" style="background:#13131f;border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.7);padding:4px 8px;border-radius:6px;font-size:12px;outline:none;cursor:pointer">
+                    <option value="starter" ${c.plan==='starter'?'selected':''}>Starter</option>
+                    <option value="pro" ${c.plan==='pro'?'selected':''}>Pro</option>
+                    <option value="enterprise" ${c.plan==='enterprise'?'selected':''}>Enterprise</option>
+                  </select>
+                  <button class="btn ${c.is_active ? 'btn-sm-red' : 'btn-sm-green'}" onclick="toggleCompany(${c.id},${c.is_active})">${c.is_active ? 'Suspendre' : 'Réactiver'}</button>
+                </td>
+              </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>`;
+}
+
+async function changePlan(id, plan) {
+  const r = await api(`/companies/${id}/plan`, { method: 'PUT', body: JSON.stringify({ plan }) });
+  if (r) toast('✅ Plan mis à jour');
+}
+
+async function toggleCompany(id, isActive) {
+  const r = await api(`/companies/${id}/toggle`, { method: 'PUT' });
+  if (r) { toast(isActive ? '⛔ Compte suspendu' : '✅ Compte réactivé'); loadCompanies(); }
+}
+
+let ordersStatus = '';
+async function loadOrders(status = '') {
+  ordersStatus = status;
+  document.getElementById('mainContent').innerHTML = `
+    <div class="page-title">Commandes</div>
+    <div class="page-sub">Toutes les commandes de la plateforme</div>
+    <div class="filter-row">
+      ${['','shipped','unboxing_submitted','completed','disputed'].map(s => `
+        <button class="filter-btn ${ordersStatus===s?'active':''}" onclick="loadOrders('${s}')">${
+          s===''?'Toutes':s==='shipped'?'Expédiées':s==='unboxing_submitted'?'À réviser':s==='completed'?'Complétées':'En litige'
+        }</button>`).join('')}
+    </div>
+    <div id="orders-table"><div class="loading">Chargement...</div></div>`;
+
+  const data = await api('/orders' + (status ? `?status=${status}` : ''));
+  if (!data) return;
+
+  const statusBadge = s => {
+    const m = { shipped:'<span class="badge badge-purple">Expédiée</span>', unboxing_submitted:'<span class="badge badge-orange">À réviser</span>', completed:'<span class="badge badge-green">Complétée</span>', disputed:'<span class="badge badge-red">Litige</span>', pending:'<span class="badge badge-gray">En attente</span>' };
+    return m[s] || `<span class="badge badge-gray">${s}</span>`;
+  };
+
+  document.getElementById('orders-table').innerHTML = `
+    <div class="card">
+      <div class="card-header"><div class="card-title">${data.total} commande(s)</div></div>
+      <div class="card-body">
+        <table>
+          <thead><tr>
+            <th>Référence</th>
+            <th>Entreprise</th>
+            <th>Produit</th>
+            <th>Client</th>
+            <th>Montant</th>
+            <th>Statut</th>
+            <th>Date</th>
+          </tr></thead>
+          <tbody>
+            ${data.orders.map(o => `
+              <tr>
+                <td style="font-family:monospace;color:rgba(255,255,255,0.5)">#${o.external_order_id || o.id}</td>
+                <td style="color:white;font-weight:500">${o.company_name}</td>
+                <td>${o.product_name}</td>
+                <td style="color:rgba(255,255,255,0.5)">${o.customer_email}</td>
+                <td>${o.order_amount ? (parseFloat(o.order_amount).toFixed(2) + ' €') : '—'}</td>
+                <td>${statusBadge(o.status)}</td>
+                <td style="color:rgba(255,255,255,0.35);font-size:12px">${new Date(o.created_at).toLocaleDateString('fr-FR')}</td>
+              </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>`;
+}
+</script>
+</body>
+</html>
