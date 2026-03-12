@@ -382,6 +382,11 @@
 
   document.getElementById('unboxing-form').addEventListener('submit', async (e) => {
     e.preventDefault();
+    const videoInput = document.getElementById('video-input');
+    if (!videoInput.files || videoInput.files.length === 0) {
+      alert('⚠️ La vidéo d\'unboxing est obligatoire. Veuillez filmer l\'ouverture de votre colis.');
+      return;
+    }
     const btn = document.getElementById('submit-btn');
     btn.disabled = true;
     btn.textContent = 'Envoi sécurisé en cours...';
